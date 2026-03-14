@@ -69,13 +69,14 @@ if (!env.DEMO_MODE) {
 //  IMPORTAR E REGISTRAR ROTAS DOS MÓDULOS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// TODO: Importar rotas aqui conforme forem criadas
-// import authRoutes from './modules/auth/auth.routes.js';
+import authRoutes from './modules/auth/auth.routes.js';
+// TODO: Importar demais rotas conforme forem criadas
 // import produtosRoutes from './modules/produtos/produtos.routes.js';
+// import installRoutes from './modules/install/install.routes.js';
 // etc.
 
 // Rotas de autenticação (públicas)
-// app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // Rotas de instalação (públicas com guard específico)
 // app.use('/api/v1/install', installRoutes);
