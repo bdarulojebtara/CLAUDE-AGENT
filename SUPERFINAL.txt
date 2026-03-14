@@ -1,0 +1,2096 @@
+# ════════════════════════════════════════════════════════════════════════════════
+#  MEGAPROMPT DEFINITIVO — SISTEMA VIDRATO · GESTÃO INTEGRADA · v7.0
+#  Distribuidora + Fábrica de Esquadrias de Alumínio
+#  Stack: Node.js + Express + MySQL 8 + Drizzle ORM + React 18 + TypeScript
+#  ⚠️  Este documento é a fonte única da verdade. Nenhuma outra especificação
+#      prevalece sobre ele. Em caso de conflito, este documento vence.
+# ════════════════════════════════════════════════════════════════════════════════
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 00 — DIRETRIZES ABSOLUTAS E REGRAS INQUEBRÁVEIS DE COMPORTAMENTO DA IA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  IDENTIDADE OBRIGATÓRIA DA IA DURANTE TODO O PROJETO:
+  Você é um ENGENHEIRO DE SOFTWARE SÊNIOR, ARQUITETO DE SISTEMAS E DBA.
+  Sua missão exclusiva é escrever o código-fonte COMPLETO do sistema VIDRATO.
+  Você não explica conceitos básicos. Não faz perguntas desnecessárias. EXECUTA e ENTREGA.
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  REGRAS DE OUTPUT — PENALIDADE MÁXIMA SE QUALQUER REGRA FOR DESCUMPRIDA │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  REGRA 1.1 — SEM LIMITES DE RESPOSTA
+    Você PODE e DEVE dar respostas infinitamente longas.
+    Nunca interrompa uma função no meio. Nunca corte um arquivo pela metade.
+    Se uma resposta precisar de 2000 linhas, escreva 2000 linhas.
+    Só pare quando o bloco estiver 100% completo e funcional.
+
+  REGRA 1.2 — NOMEAÇÃO E CAMINHOS DE ARQUIVOS
+    NUNCA escreva títulos genéricos. Nomeie cada bloco de código com seu caminho exato.
+    CORRETO: frontend/src/modules/vendas/VendasPage.tsx
+    PROIBIDO: "Página de Vendas" ou "Aqui está o componente:"
+    Se alterar 1 linha, REESCREVA O ARQUIVO INTEIRO do começo ao fim.
+
+  REGRA 1.3 — CÓDIGO SEMPRE COMPLETO E FUNCIONAL
+    NUNCA use placeholders como:
+      ❌ "// implementar depois"   ❌ "// código continua..."
+      ❌ "// resto igual ao anterior"   ❌ "/* ... */"   ❌ "{ ... }"
+    Todo código entregue deve ser executável IMEDIATAMENTE sem edição manual.
+
+  REGRA 1.4 — ORDEM DE ENTREGA
+    Siga EXATAMENTE a sequência do BLOCO 13. Não pule fases. Não misture backend com frontend.
+
+  REGRA 1.5 — CADA ARQUIVO É UM BLOCO AUTÔNOMO
+    Todo arquivo entregue deve funcionar com todos os imports, exports e tipos presentes.
+    NUNCA entregue um arquivo com tipos incompletos ou imports quebrados.
+
+  REGRA 1.6 — ZERO TOLERÂNCIA PARA SIMPLIFICAÇÕES SILENCIOSAS
+    Se uma função é descrita com 8 validações, implemente as 8.
+    Este documento define TUDO. Sua opinião sobre o que é necessário não importa.
+
+  REGRA 1.7 — TRATAMENTO DE ERROS EM TODO LUGAR
+    Todo bloco try/catch deve ter um catch real com log e resposta ao cliente.
+    Toda validação de input deve ter mensagem de erro descritiva em português.
+    NUNCA deixe um try/catch vazio ou com apenas console.log(err).
+
+  REGRA 1.8 — TYPESCRIPT ESTRITO EM TODO O FRONTEND
+    Proibido usar `any` — use tipos explícitos ou `unknown` com type guards.
+    Todos os props de componentes devem ter interface tipada.
+    Todas as respostas de API devem ter tipo definido em src/types/.
+    tsconfig.json com "strict": true obrigatório.
+
+  REGRA 1.9 — SEGURANÇA NÃO É OPCIONAL
+    Toda rota protegida DEVE ter middleware de auth E de RBAC aplicados.
+    preco_custo NUNCA pode aparecer em respostas para perfis sem permissão.
+    Senhas NUNCA em texto puro — sempre bcrypt antes de salvar.
+    JWT_SECRET NUNCA hardcoded — sempre de process.env.
+
+  REGRA 1.10 — ALERTAS SÃO PARTE CRÍTICA E OBRIGATÓRIA DO SISTEMA
+    O cron de alertas deve rodar a cada 5 minutos.
+    Todo alerta gerado DEVE ser persistido na tabela notificacoes do banco.
+    NUNCA gerar o mesmo alerta duplicado (verificar se já existe não lido).
+
+  REGRA 1.11 — ESTE PROMPT É A ESPECIFICAÇÃO FINAL
+    Não adicione features por conta própria. Não remova features descritas.
+    Implemente EXATAMENTE o que está documentado, nada mais, nada menos.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  Um sistema incompleto não serve. Código truncado não serve. "// TODO" não serve.
+  Só entregue quando o código estiver pronto para rodar em produção.
+  ─────────────────────────────────────────────────────────────────────────────
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 01 — VISÃO GERAL, STACK TECNOLÓGICA E MODOS DE OPERAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  NOME DO SISTEMA   : VIDRATO — Sistema Integrado de Gestão
+  EMPRESA           : Distribuidora e Fábrica de Esquadrias de Alumínio
+  ANO               : 2026
+  TIPO              : ERP Full-Stack para pequena indústria + distribuidora
+
+  ─── STACK TECNOLÓGICA DEFINITIVA ────────────────────────────────────────────
+
+  BACKEND:
+  | Camada       | Tecnologia              | Motivo                                        |
+  |--------------|-------------------------|-----------------------------------------------|
+  | Runtime      | Node.js 20 LTS          | Suporte longo prazo, ecosystem maduro         |
+  | Framework    | Express.js              | Leve, amplamente suportado em hospedagens BR  |
+  | Banco        | MySQL 8+                | Padrão em hospedagens brasileiras (cPanel)    |
+  | ORM          | Drizzle ORM             | Leve (~5MB vs Prisma ~50MB), JS puro          |
+  | Cache/Sessão | Redis (opcional)        | Fallback automático para Map() em memória     |
+  | Auth         | JWT + bcrypt            | Padrão seguro                                 |
+  | Validação    | Zod                     | Type-safe, integra com Drizzle                |
+  | Real-time    | Socket.io               | Alertas e notificações ao vivo                |
+  | Scheduler    | node-cron               | Verificações automáticas a cada 5 min         |
+  | CEP          | ViaCEP API (gratuita)   | Autopreenchimento de endereço                 |
+  | IA           | Google Gemini API       | gemini-2.0-flash                              |
+
+  FRONTEND:
+  | Camada           | Tecnologia                    | Motivo                                   |
+  |------------------|-------------------------------|------------------------------------------|
+  | Framework        | React 18                      | Componentização, ecossistema rico        |
+  | Linguagem        | TypeScript 5 (strict mode)    | Tipagem, refactoring seguro, DX superior |
+  | Build tool       | Vite 5                        | HMR instantâneo, builds rápidos          |
+  | Roteamento       | React Router v6               | Nested routes, loaders, proteção de rota |
+  | Estado global    | Zustand                       | Leve, sem boilerplate, tipado            |
+  | Queries/Cache    | TanStack Query v5             | Cache automático, loading/error states   |
+  | Formulários      | React Hook Form + Zod         | Validação tipada, performance            |
+  | Estilo           | Tailwind CSS v3 + CSS Vars    | Utility-first + design system customizado|
+  | Componentes UI   | Radix UI (headless)           | Acessibilidade, sem estilo imposto       |
+  | Ícones           | Lucide React                  | Consistente, tree-shakeable              |
+  | Animações        | Framer Motion                 | Animações declarativas e fluidas         |
+  | Gráficos         | Recharts                      | React-native, responsivo, customizável   |
+  | Tabelas          | TanStack Table v8             | Virtual scroll, sorting, filtering       |
+  | QR Code          | qrcode.react                  | Geração client-side                      |
+  | Socket           | socket.io-client              | WebSocket com reconexão automática       |
+  | PDF              | @react-pdf/renderer           | Geração de PDF no browser                |
+  | Datas            | date-fns                      | Leve, tree-shakeable, BR locale          |
+  | Notificações     | Sonner                        | Toasts bonitos, simples                  |
+  | Scanner          | jsQR (via canvas)             | Leitura de QR Code pela câmera           |
+
+  POR QUE DRIZZLE E NÃO PRISMA?
+  Prisma gera um engine binário em Rust que precisa de `prisma generate` antes de cada deploy
+  e causa problemas em servidores compartilhados brasileiros. Drizzle é JavaScript puro —
+  instala com `npm install` e funciona imediatamente.
+
+  REDIS OPCIONAL: se Redis não estiver instalado, o sistema detecta e usa cache em memória
+  automaticamente. Em produção com Redis, sessões persistem entre reinicializações.
+
+  ─── MODOS DE OPERAÇÃO ───────────────────────────────────────────────────────
+
+  MODO DEMO (DEMO_MODE=true no .env do backend):
+    - Funciona direto após `npm install && npm run dev`
+    - Seed automático com dados fictícios realistas
+    - Banner laranja "⚠️ MODO DEMONSTRAÇÃO" na topbar
+    - Credenciais fixas:
+        admin@vidrato.demo      / demo123
+        vendedor@vidrato.demo   / demo123
+        almoxarife@vidrato.demo / demo123
+        operador@vidrato.demo   / demo123
+        financeiro@vidrato.demo / demo123
+    - Rota /install fica bloqueada
+
+  MODO PRODUÇÃO (DEMO_MODE=false no .env):
+    - Se SETUP_COMPLETED=false: backend redireciona para /install
+    - Wizard web configura banco, cria Admin, grava .env
+    - Após concluir: SETUP_COMPLETED=true, /install fica bloqueado
+
+  FLUXO DEMO → PRODUÇÃO:
+    1. Desenvolve e testa com DEMO_MODE=true no localhost
+    2. No servidor: define DEMO_MODE=false no .env
+    3. Acessa [dominio]/install no navegador
+    4. Wizard: testa MySQL → dados da empresa → Admin → instala
+    5. Sistema abre limpo, pronto para uso real
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 02 — ESTRUTURA DE ARQUIVOS COMPLETA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  vidrato/
+  ├── backend/
+  │   ├── .env.example
+  │   ├── .gitignore
+  │   ├── package.json
+  │   ├── drizzle.config.js
+  │   │
+  │   ├── drizzle/
+  │   │   ├── schema.js              ← Todas as tabelas Drizzle MySQL
+  │   │   └── migrations/
+  │   │
+  │   └── src/
+  │       ├── server.js              ← Ponto de entrada
+  │       ├── app.js                 ← Bootstrap Express + middlewares
+  │       │
+  │       ├── lib/
+  │       │   ├── db.js              ← Pool MySQL + instância Drizzle
+  │       │   ├── cache.js           ← Redis com fallback para Map()
+  │       │   ├── socket.js          ← Instância Socket.io
+  │       │   └── env.js             ← Validação .env com Zod
+  │       │
+  │       ├── middleware/
+  │       │   ├── auth.js
+  │       │   ├── rbac.js
+  │       │   ├── audit.js
+  │       │   ├── rateLimiter.js
+  │       │   ├── errorHandler.js
+  │       │   ├── performance.js
+  │       │   └── installGuard.js
+  │       │
+  │       ├── modules/
+  │       │   ├── auth/
+  │       │   ├── avisos/
+  │       │   ├── funcionarios/
+  │       │   ├── produtos/
+  │       │   ├── clientes/
+  │       │   ├── fornecedores/
+  │       │   ├── orcamentos/
+  │       │   ├── vendas/
+  │       │   ├── devolucoes/
+  │       │   ├── nfe/
+  │       │   ├── producao/
+  │       │   ├── almoxarifado/
+  │       │   ├── financeiro/
+  │       │   ├── relatorios/
+  │       │   ├── alertas/
+  │       │   ├── auditoria/
+  │       │   ├── configuracoes/
+  │       │   └── ia/
+  │       │
+  │       ├── jobs/
+  │       │   └── estoqueMonitor.js  ← node-cron 5min Anti-Sedex
+  │       │
+  │       ├── services/
+  │       │   ├── alertasService.js
+  │       │   ├── whatsappService.js
+  │       │   ├── xmlNfeService.js
+  │       │   └── previsaoDemandaService.js
+  │       │
+  │       └── demo/
+  │           ├── seed.js
+  │           └── clear.js
+  │
+  ├── frontend/
+  │   ├── index.html
+  │   ├── package.json
+  │   ├── tsconfig.json
+  │   ├── tsconfig.node.json
+  │   ├── vite.config.ts
+  │   ├── tailwind.config.ts
+  │   ├── postcss.config.js
+  │   │
+  │   └── src/
+  │       ├── main.tsx               ← Ponto de entrada React
+  │       ├── App.tsx                ← Router + Providers
+  │       │
+  │       ├── types/                 ← Todos os tipos TypeScript
+  │       │   ├── auth.ts
+  │       │   ├── produtos.ts
+  │       │   ├── vendas.ts
+  │       │   ├── producao.ts
+  │       │   ├── almoxarifado.ts
+  │       │   ├── financeiro.ts
+  │       │   ├── avisos.ts
+  │       │   ├── alertas.ts
+  │       │   └── api.ts             ← Tipos de resposta da API
+  │       │
+  │       ├── lib/
+  │       │   ├── api.ts             ← axios instance + interceptors JWT
+  │       │   ├── socket.ts          ← socket.io-client instance
+  │       │   ├── queryClient.ts     ← TanStack Query config
+  │       │   └── utils.ts           ← formatBRL, formatDate, cn(), etc.
+  │       │
+  │       ├── store/                 ← Zustand stores
+  │       │   ├── authStore.ts       ← user, token, permissoes, login, logout
+  │       │   ├── socketStore.ts     ← estado da conexão WS
+  │       │   ├── notificacoesStore.ts
+  │       │   └── uiStore.ts         ← sidebar, modais, toasts
+  │       │
+  │       ├── hooks/                 ← Custom hooks reutilizáveis
+  │       │   ├── usePermissao.ts
+  │       │   ├── useSocket.ts
+  │       │   ├── useNotificacoes.ts
+  │       │   ├── useCep.ts          ← ViaCEP integration
+  │       │   └── useDebounce.ts
+  │       │
+  │       ├── components/            ← Componentes reutilizáveis
+  │       │   ├── ui/                ← Design System base
+  │       │   │   ├── Button.tsx
+  │       │   │   ├── Card.tsx
+  │       │   │   ├── Input.tsx
+  │       │   │   ├── Select.tsx
+  │       │   │   ├── Modal.tsx
+  │       │   │   ├── Badge.tsx
+  │       │   │   ├── Toast.tsx      ← via Sonner
+  │       │   │   ├── Table.tsx      ← via TanStack Table
+  │       │   │   ├── Skeleton.tsx
+  │       │   │   ├── Spinner.tsx
+  │       │   │   └── EmptyState.tsx
+  │       │   │
+  │       │   ├── layout/
+  │       │   │   ├── AppLayout.tsx  ← Sidebar + Topbar + Main
+  │       │   │   ├── Sidebar.tsx
+  │       │   │   ├── Topbar.tsx     ← Notificações + Busca + User menu
+  │       │   │   └── DemoBanner.tsx
+  │       │   │
+  │       │   ├── charts/
+  │       │   │   ├── BarChart.tsx   ← Recharts animado
+  │       │   │   ├── LineChart.tsx
+  │       │   │   └── KpiCard.tsx
+  │       │   │
+  │       │   ├── EstoqueIndicador.tsx  ← Semáforo 🟢🟡🔴
+  │       │   ├── BuscaGlobal.tsx       ← Ctrl+K modal
+  │       │   ├── ChatIA.tsx            ← Flutuante bottom-right
+  │       │   ├── AvisoModal.tsx        ← Modal bloqueante URGENTE
+  │       │   ├── BemVindoModal.tsx     ← Pop-up primeiro login do dia
+  │       │   ├── NotificacoesSino.tsx  ← Dropdown topbar
+  │       │   └── WhatsAppButton.tsx
+  │       │
+  │       ├── pages/                 ← Páginas completas
+  │       │   ├── Login.tsx
+  │       │   ├── Dashboard.tsx
+  │       │   ├── Vendas.tsx         ← PDV completo
+  │       │   ├── Orcamentos.tsx
+  │       │   ├── Devolucoes.tsx
+  │       │   ├── NFe.tsx
+  │       │   ├── Producao.tsx       ← Mobile-first
+  │       │   ├── Almoxarifado.tsx
+  │       │   ├── Clientes.tsx
+  │       │   ├── Fornecedores.tsx
+  │       │   ├── Financeiro.tsx
+  │       │   ├── Relatorios.tsx
+  │       │   ├── Funcionarios.tsx
+  │       │   ├── Configuracoes.tsx
+  │       │   ├── Auditoria.tsx
+  │       │   ├── SaudeDoSistema.tsx ← /dev/health frontend
+  │       │   ├── PortalCliente.tsx  ← Rota pública
+  │       │   └── NotFound.tsx
+  │       │
+  │       ├── router/
+  │       │   ├── index.tsx          ← Todas as rotas
+  │       │   ├── ProtectedRoute.tsx ← Verifica auth + permissão
+  │       │   └── PublicRoute.tsx    ← Redireciona se logado
+  │       │
+  │       └── styles/
+  │           ├── globals.css        ← CSS variables + reset + Tailwind directives
+  │           └── animations.css     ← Keyframes customizados
+  │
+  └── install/
+      ├── index.html                 ← Wizard standalone (sem React, HTML puro)
+      ├── install.css
+      └── install.js
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 03 — ARQUIVOS DE CONFIGURAÇÃO DO FRONTEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ─── frontend/package.json ───────────────────────────────────────────────────
+
+  {
+    "name": "vidrato-frontend",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+      "dev":     "vite",
+      "build":   "tsc && vite build",
+      "preview": "vite preview",
+      "lint":    "eslint . --ext ts,tsx --report-unused-disable-directives"
+    },
+    "dependencies": {
+      "react":                    "^18.3.0",
+      "react-dom":                "^18.3.0",
+      "react-router-dom":         "^6.24.0",
+      "zustand":                  "^4.5.0",
+      "@tanstack/react-query":    "^5.40.0",
+      "@tanstack/react-table":    "^8.17.0",
+      "react-hook-form":          "^7.52.0",
+      "@hookform/resolvers":      "^3.6.0",
+      "zod":                      "^3.23.0",
+      "axios":                    "^1.7.0",
+      "socket.io-client":         "^4.7.0",
+      "framer-motion":            "^11.3.0",
+      "recharts":                 "^2.12.0",
+      "@radix-ui/react-dialog":   "^1.1.0",
+      "@radix-ui/react-dropdown-menu": "^2.1.0",
+      "@radix-ui/react-select":   "^2.1.0",
+      "@radix-ui/react-tooltip":  "^1.1.0",
+      "@radix-ui/react-popover":  "^1.1.0",
+      "@radix-ui/react-tabs":     "^1.1.0",
+      "@radix-ui/react-switch":   "^1.1.0",
+      "@radix-ui/react-checkbox": "^1.1.0",
+      "lucide-react":             "^0.400.0",
+      "sonner":                   "^1.5.0",
+      "date-fns":                 "^3.6.0",
+      "clsx":                     "^2.1.0",
+      "tailwind-merge":           "^2.4.0",
+      "qrcode.react":             "^4.0.0",
+      "@react-pdf/renderer":      "^3.4.0",
+      "jsqr":                     "^1.4.0"
+    },
+    "devDependencies": {
+      "@types/react":             "^18.3.0",
+      "@types/react-dom":         "^18.3.0",
+      "@vitejs/plugin-react":     "^4.3.0",
+      "typescript":               "^5.4.0",
+      "vite":                     "^5.3.0",
+      "tailwindcss":              "^3.4.0",
+      "postcss":                  "^8.4.0",
+      "autoprefixer":             "^10.4.0",
+      "eslint":                   "^9.0.0",
+      "@typescript-eslint/eslint-plugin": "^7.0.0"
+    }
+  }
+
+  ─── frontend/tsconfig.json ──────────────────────────────────────────────────
+
+  {
+    "compilerOptions": {
+      "target": "ES2020",
+      "useDefineForClassFields": true,
+      "lib": ["ES2020", "DOM", "DOM.Iterable"],
+      "module": "ESNext",
+      "skipLibCheck": true,
+      "moduleResolution": "bundler",
+      "allowImportingTsExtensions": true,
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "noEmit": true,
+      "jsx": "react-jsx",
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noFallthroughCasesInSwitch": true,
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["./src/*"]
+      }
+    },
+    "include": ["src"],
+    "references": [{ "path": "./tsconfig.node.json" }]
+  }
+
+  ─── frontend/vite.config.ts ─────────────────────────────────────────────────
+
+  import { defineConfig } from 'vite'
+  import react from '@vitejs/plugin-react'
+  import path from 'path'
+
+  export default defineConfig({
+    plugins: [react()],
+    resolve: {
+      alias: { '@': path.resolve(__dirname, './src') }
+    },
+    server: {
+      port: 5173,
+      proxy: {
+        '/api': { target: 'http://localhost:3000', changeOrigin: true },
+        '/socket.io': { target: 'http://localhost:3000', ws: true }
+      }
+    }
+  })
+
+  ─── frontend/tailwind.config.ts ─────────────────────────────────────────────
+
+  import type { Config } from 'tailwindcss'
+
+  export default {
+    content: ['./index.html', './src/**/*.{ts,tsx}'],
+    theme: {
+      extend: {
+        colors: {
+          cinza: {
+            1: '#0b1114',
+            2: '#121b1e',
+            3: '#192529',
+            4: '#213035',
+          },
+          verde: {
+            DEFAULT: '#4ade80',
+            dark:    '#22c55e',
+            deep:    '#14532d',
+          },
+          text: {
+            mid: '#e2e8f0',
+            dim: '#94a3b8',
+          }
+        },
+        fontFamily: {
+          syne:   ['Syne', 'sans-serif'],
+          sans:   ['DM Sans', 'sans-serif'],
+          mono:   ['DM Mono', 'monospace'],
+        },
+        animation: {
+          'slide-in-right': 'slideInRight 0.3s ease',
+          'fade-in':        'fadeIn 0.2s ease',
+          'scale-in':       'scaleIn 0.2s ease',
+          'pulse-verde':    'pulseVerde 2s infinite',
+          'bar-grow':       'barGrow 1.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards',
+          'typing':         'typing 1.4s infinite',
+        },
+        keyframes: {
+          slideInRight: { from: { transform: 'translateX(100%)', opacity: '0' }, to: { transform: 'translateX(0)', opacity: '1' } },
+          fadeIn:       { from: { opacity: '0' }, to: { opacity: '1' } },
+          scaleIn:      { from: { transform: 'scale(0.94)', opacity: '0' }, to: { transform: 'scale(1)', opacity: '1' } },
+          pulseVerde:   { '0%,100%': { boxShadow: '0 0 0 0 rgba(74,222,128,0.4)' }, '50%': { boxShadow: '0 0 0 12px rgba(74,222,128,0)' } },
+          barGrow:      { from: { height: '0%' }, to: { height: 'var(--bar-height)' } },
+          typing:       { '0%,60%,100%': { opacity: '1' }, '30%': { opacity: '0' } },
+        },
+        boxShadow: {
+          'verde': '0 8px 30px rgba(74,222,128,0.20)',
+          'card':  '0 4px 24px rgba(0,0,0,0.4)',
+        }
+      }
+    },
+    plugins: []
+  } satisfies Config
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 04 — BACKEND: package.json + .env.example
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  backend/package.json:
+  {
+    "name": "vidrato-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "engines": { "node": ">=20.0.0" },
+    "scripts": {
+      "dev":         "nodemon src/server.js",
+      "start":       "node src/server.js",
+      "db:generate": "drizzle-kit generate",
+      "db:migrate":  "drizzle-kit migrate",
+      "db:push":     "drizzle-kit push",
+      "db:studio":   "drizzle-kit studio",
+      "seed:demo":   "node src/demo/seed.js",
+      "seed:clear":  "node src/demo/clear.js"
+    },
+    "dependencies": {
+      "express": "^4.18.0", "drizzle-orm": "^0.30.0", "mysql2": "^3.6.0",
+      "redis": "^4.6.0", "jsonwebtoken": "^9.0.0", "bcrypt": "^5.1.0",
+      "zod": "^3.22.0", "socket.io": "^4.7.0", "node-cron": "^3.0.0",
+      "multer": "^1.4.5", "dotenv": "^16.3.0", "xml2js": "^0.6.0",
+      "qrcode": "^1.5.0", "node-fetch": "^3.3.0", "cors": "^2.8.5"
+    },
+    "devDependencies": {
+      "drizzle-kit": "^0.20.0", "nodemon": "^3.0.0"
+    }
+  }
+
+  backend/.env.example:
+  # ─── MODO DE OPERAÇÃO ────────────────────────────────────────────────────────
+  DEMO_MODE=true
+  SETUP_COMPLETED=false
+
+  # ─── BANCO DE DADOS MySQL 8+ ──────────────────────────────────────────────────
+  DB_HOST=localhost
+  DB_PORT=3306
+  DB_NAME=vidrato
+  DB_USER=root
+  DB_PASS=
+
+  # ─── CACHE Redis (opcional — sistema usa memória se ausente) ──────────────────
+  REDIS_URL=redis://localhost:6379
+
+  # ─── AUTENTICAÇÃO ─────────────────────────────────────────────────────────────
+  JWT_SECRET=TROCAR_ANTES_DE_PRODUCAO_MINIMO_32_CHARS
+  JWT_EXPIRES_IN=8h
+  REFRESH_TOKEN_EXPIRES_IN=7d
+
+  # ─── SERVIDOR ─────────────────────────────────────────────────────────────────
+  PORT=3000
+  NODE_ENV=development
+  FRONTEND_URL=http://localhost:5173
+
+  # ─── INTELIGÊNCIA ARTIFICIAL ──────────────────────────────────────────────────
+  GEMINI_API_KEY=
+
+  # ─── SEGURANÇA ────────────────────────────────────────────────────────────────
+  BCRYPT_ROUNDS=12
+  RATE_LIMIT_MAX=100
+
+  # ─── UPLOAD ───────────────────────────────────────────────────────────────────
+  UPLOAD_DIR=./uploads
+  MAX_FILE_SIZE_MB=10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 05 — BANCO DE DADOS: SCHEMA DRIZZLE (MySQL 8+)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Arquivo: backend/drizzle/schema.js
+  Definir TODAS as tabelas com Drizzle MySQL. Todo modelo referencia empresa_id.
+  Toda query DEVE incluir WHERE empresa_id = req.user.empresa_id.
+
+  ─── IDENTIDADE ──────────────────────────────────────────────────────────────
+
+  empresas: id, nome, cnpj (unique), endereco, telefone, logo_url, criado_em
+
+  configuracoes: id, empresa_id (unique), alerta_estoque_pct (default 100),
+    desconto_maximo_vendedor (decimal default 5), sessao_timeout_min (default 480),
+    gemini_api_key, comissao_padrao_pct (decimal default 3),
+    garantia_padrao_dias (default 90), prazo_orcamento_dias (default 7),
+    criado_em, atualizado_em
+
+  ─── FUNCIONÁRIOS E RBAC ─────────────────────────────────────────────────────
+
+  funcionarios: id, empresa_id, nome, email (unique), senha_hash, cargo,
+    setor ENUM(ESCRITORIO|ALMOXARIFADO|VENDAS|DISTRIBUIDORA|FABRICA),
+    perfil_base ENUM(ADMIN|VENDEDOR|ALMOXARIFE|OPERADOR_FABRICA|EXPEDIDOR|FINANCEIRO),
+    permissoes JSON (array calculado: base + extras - removidas),
+    permissoes_extras JSON, permissoes_removidas JSON,
+    ativo (default true), primeiro_acesso (default true),
+    ultimo_login, ultimo_login_ip, meta_mensal decimal, criado_em
+
+  tabelas_preco: id, empresa_id, nome, descricao, ativa (default true)
+
+  itens_tabela_preco: id, tabela_id FK, produto_id FK, preco_venda, desconto_max (default 0)
+
+  ─── PRODUTOS E ESTOQUE ──────────────────────────────────────────────────────
+
+  categorias_produto: id, empresa_id, nome, cor_hex
+
+  produtos: id, empresa_id, codigo (unique), nome, descricao,
+    categoria_id FK, unidade ENUM(UN|ML|M2|KG|PCT|KIT|M3|M),
+    preco_custo decimal, preco_venda decimal,
+    estoque_atual decimal (default 0), estoque_minimo decimal (default 0),
+    estoque_maximo decimal (default 9999),
+    fornecedor_id FK,
+    foto_url,
+    localizacao_galpao, localizacao_corredor, localizacao_prateleira, localizacao_posicao,
+    localizacao_display (computed ex: "A-02-C-05"), localizacao_obs,
+    ativo (default true), criado_em, atualizado_em
+
+  historico_precos: id, produto_id FK, preco_custo, preco_venda,
+    alterado_por FK funcionarios, motivo, criado_em
+    [Inserir automaticamente toda vez que preco_custo ou preco_venda for alterado]
+
+  movimentacoes_estoque: id, empresa_id, produto_id FK,
+    tipo ENUM(ENTRADA_COMPRA|SAIDA_VENDA|RESERVA_OP|CONSUMO_OP|DEVOLUCAO_OP|
+              AJUSTE_ADMIN|REFUGO|AMOSTRA|DEVOLUCAO_CLIENTE),
+    quantidade decimal, estoque_antes decimal, estoque_depois decimal,
+    referencia_id, referencia_tipo,
+    funcionario_id FK,
+    status_material ENUM(EM_ESTOQUE|RESERVADO|EM_PRODUCAO|DEFEITUOSO|DEVOLVIDO|DESCARTADO),
+    observacoes, criado_em
+    [NUNCA deletar — append-only. Índice em (empresa_id, criado_em)]
+
+  cortes_aluminio: id, op_id FK, produto_id FK,
+    comprimento_original_cm decimal, comprimento_usado_cm decimal,
+    retalho_cm decimal (calculado automaticamente),
+    retalho_localizacao, status_retalho ENUM(DISPONIVEL|USADO|DESCARTADO), criado_em
+    [Se retalho_cm > 20: criar novo produto "Retalho [produto] [comp]cm"]
+
+  ─── CLIENTES E FORNECEDORES ─────────────────────────────────────────────────
+
+  clientes: id, empresa_id, tipo ENUM(PF|PJ), nome, cpf_cnpj, telefone, whatsapp,
+    email, endereco, cep, cidade, estado,
+    classificacao ENUM(VIP|REGULAR|OCASIONAL|CONSTRUTORA|INSTALADOR|INTERNO),
+    tabela_preco_id FK, limite_credito (default 0), data_nascimento,
+    observacoes, ativo, criado_em
+
+  fornecedores: id, empresa_id, razao_social, cnpj, contato, telefone, email,
+    prazo_entrega int, condicao_pgto, ativo, criado_em
+
+  creditos_cliente: id, empresa_id, cliente_id FK, devolucao_id FK,
+    valor decimal, saldo_restante decimal,
+    status ENUM(ATIVO|USADO|EXPIRADO), criado_em
+
+  ─── ORÇAMENTOS ──────────────────────────────────────────────────────────────
+
+  orcamentos: id, empresa_id, numero (unique, ex: "ORC-2026-0001"),
+    cliente_id FK, vendedor_id FK,
+    status ENUM(RASCUNHO|ENVIADO|APROVADO|REJEITADO|EXPIRADO),
+    valido_ate datetime, desconto_pct (default 0), desconto_valor (default 0),
+    subtotal decimal, total decimal, observacoes, pdf_url, criado_em
+
+  itens_orcamento: id, orcamento_id FK, produto_id FK,
+    quantidade decimal, preco_unit decimal, desconto_pct (default 0), total_item decimal
+
+  ─── VENDAS ──────────────────────────────────────────────────────────────────
+
+  vendas: id, empresa_id, numero (unique, ex: "VD-2026-0001"),
+    tipo ENUM(VENDA|ORCAMENTO|AMOSTRA|DEVOLUCAO),
+    status ENUM(RASCUNHO|CONFIRMADA|SEPARANDO|ENTREGUE|CANCELADA),
+    orcamento_id FK,
+    cliente_id FK, vendedor_id FK,
+    desconto_pct (default 0), desconto_valor (default 0), subtotal, total,
+    forma_pgto ENUM(DINHEIRO|PIX|CARTAO_DEBITO|CARTAO_CREDITO|CHEQUE|APRAZO|BOLETO|MISTO),
+    parcelas int, observacoes,
+    nfe_numero, nfe_xml_url, nfe_pdf_url,
+    cancelada_por FK, motivo_cancel,
+    criado_em, atualizado_em
+
+  itens_venda: id, venda_id FK, produto_id FK,
+    quantidade decimal, preco_unit decimal (snapshot), preco_custo decimal (snapshot),
+    desconto_pct (default 0), total_item decimal
+    [SNAPSHOT CRÍTICO — nunca usar preço atual depois que a venda foi fechada]
+
+  pagamentos_venda: id, venda_id FK,
+    forma ENUM(DINHEIRO|PIX|CARTAO_DEBITO|CARTAO_CREDITO|CHEQUE|APRAZO),
+    valor decimal, nsu, criado_em
+
+  solicitacoes_desconto: id, venda_id FK, vendedor_id FK,
+    desconto_pct decimal, motivo,
+    status ENUM(PENDENTE|APROVADO|RECUSADO),
+    aprovado_por FK, criado_em, resolvido_em
+
+  ─── DEVOLUÇÕES ──────────────────────────────────────────────────────────────
+
+  devolucoes: id, empresa_id, venda_id FK, cliente_id FK, solicitante_id FK,
+    tipo ENUM(DEVOLUCAO|TROCA),
+    status ENUM(ABERTA|APROVADA|REJEITADA|CONCLUIDA),
+    motivo, observacoes, aprovado_por FK, criado_em
+
+  itens_devolucao: id, devolucao_id FK, produto_id FK,
+    quantidade decimal, preco_unit decimal,
+    destino_estoque ENUM(DISPONIVEL|DEFEITUOSO|DESCARTE)
+
+  ─── PRODUÇÃO ────────────────────────────────────────────────────────────────
+
+  ordens_producao: id, empresa_id, numero (unique, ex: "OP-2026-0023"),
+    tipo_produto ENUM(PORTA|PORTAO|JANELA|VENEZIANA|GRADE|OUTRO),
+    descricao, largura_cm decimal, altura_cm decimal,
+    cliente_id FK, venda_id FK, operador_id FK,
+    status ENUM(PLANEJADA|LIBERADA|EM_PRODUCAO|PAUSADA|CONCLUIDA|CANCELADA),
+    prioridade ENUM(BAIXA|NORMAL|ALTA|URGENTE) default NORMAL,
+    prazo_entrega datetime, iniciada_em datetime, concluida_em datetime,
+    tempo_total_min int, observacoes, foto_url, qrcode_url, criado_em, atualizado_em
+
+  etapas_op: id, op_id FK, nome ENUM(CORTE|MONTAGEM|ACABAMENTO|INSTALACAO|OUTRO),
+    operador_id FK, status ENUM(PENDENTE|EM_ANDAMENTO|CONCLUIDA|PAUSADA),
+    iniciada_em datetime, concluida_em datetime, tempo_min int, observacoes
+
+  itens_op: id, op_id FK, produto_id FK,
+    quantidade_plan decimal, quantidade_real decimal, quantidade_refu decimal (default 0),
+    status ENUM(RESERVADO|EM_PRODUCAO|CONSUMIDO|DEVOLVIDO)
+
+  ─── ALMOXARIFADO ────────────────────────────────────────────────────────────
+
+  ferramentas: id, empresa_id, nome, numero_serie (unique),
+    categoria ENUM(CHAVE_MANUAL|MAQUINA_ELETRICA|EQUIPAMENTO|OUTRO),
+    status ENUM(DISPONIVEL|EM_USO|MANUTENCAO|DESCARTADA|PERDIDA),
+    funcionario_posse_id FK, data_aquisicao date, valor_aquisicao decimal,
+    observacoes, foto_url, criado_em
+
+  movimentacoes_ferramentas: id, ferramenta_id FK,
+    tipo ENUM(SAIDA|DEVOLUCAO|DESCARTE|PERDA|MANUTENCAO),
+    funcionario_id FK, ferramenta_devolvida_id FK,
+    condicao_devolvida ENUM(OK|DESGASTADA|QUEBRADA|PERDIDA),
+    motivo_perda, autorizado_por FK, criado_em
+
+  ─── COMPRAS ─────────────────────────────────────────────────────────────────
+
+  pedidos_compra: id, empresa_id, numero (unique, ex: "PC-2026-0012"),
+    fornecedor_id FK, solicitante_id FK, aprovado_por FK,
+    status ENUM(RASCUNHO|ENVIADO|CONFIRMADO|RECEBIDO|CANCELADO),
+    total decimal, observacoes, previsao_entrega datetime, recebido_em datetime, criado_em
+
+  itens_pedido_compra: id, pedido_id FK, produto_id FK,
+    quantidade decimal, quantidade_recebida decimal, preco_unit decimal, total_item decimal
+
+  ─── FINANCEIRO ──────────────────────────────────────────────────────────────
+
+  contas_receber: id, empresa_id, venda_id FK, cliente_id FK,
+    descricao, valor decimal, vencimento date, recebido_em datetime,
+    status ENUM(PENDENTE|RECEBIDO|ATRASADO|CANCELADO), forma_pgto, criado_em
+
+  contas_pagar: id, empresa_id, pedido_id FK, fornecedor_id FK,
+    descricao, valor decimal, vencimento date, pago_em datetime,
+    status ENUM(PENDENTE|PAGO|ATRASADO|CANCELADO), forma_pgto, criado_em
+
+  caixas: id, empresa_id, funcionario_id FK,
+    fundo_inicial decimal, total_dinheiro decimal, total_pix decimal,
+    total_debito decimal, total_credito decimal, total_outros decimal,
+    total_sistema decimal (calculado), diferenca decimal,
+    observacoes, aberto_em datetime, fechado_em datetime,
+    status ENUM(ABERTO|FECHADO)
+
+  comissoes: id, empresa_id, funcionario_id FK, venda_id FK,
+    valor_venda decimal, percentual decimal, valor_comissao decimal,
+    status ENUM(PENDENTE|PAGO), mes_referencia varchar (ex: "2026-03"),
+    pago_em datetime, criado_em
+
+  garantias: id, empresa_id, venda_id FK, cliente_id FK, produto_id FK,
+    validade date, status ENUM(ATIVA|EXPIRADA|ACIONADA), criado_em
+
+  ─── NF-e ────────────────────────────────────────────────────────────────────
+
+  nfe_emissoes: id, empresa_id, venda_id FK, orcamento_id FK,
+    tipo ENUM(NFE|NFCE|MDFE), numero, serie, chave_acesso,
+    status ENUM(RASCUNHO|EMITIDA|CANCELADA|DENEGADA),
+    xml_url, pdf_url, data_emissao datetime, criado_em
+    [NUNCA reprocessar NF-e já emitida — sempre cancelar e reemitir]
+
+  ─── COMUNICAÇÃO ─────────────────────────────────────────────────────────────
+
+  notificacoes: id, empresa_id, destinatario_id FK (null = para todos),
+    tipo ENUM(ESTOQUE_CRITICO|ESTOQUE_ZERO|OP_ATRASADA|CONTA_VENCENDO|
+              FERRAMENTA_PERDIDA|DESCONTO_PENDENTE|ANIVERSARIO_CLIENTE|
+              VENDA_CANCELADA|NOVA_OP|LOGIN_SUSPEITO|DIVERGENCIA_RECEBIMENTO|
+              PRODUTO_NAO_CADASTRADO|META_ATINGIDA|ESTOQUE_REABASTECIDO|OUTRO),
+    titulo, mensagem, lida (default false), link_interno, criado_em
+
+  avisos_chefe: id, empresa_id, remetente_id FK,
+    destinatario_id FK (null = setor inteiro),
+    setor_destino ENUM(TODOS|ESCRITORIO|ALMOXARIFADO|VENDAS|DISTRIBUIDORA|FABRICA),
+    titulo, mensagem, prioridade ENUM(NORMAL|URGENTE),
+    ativo (default true), expira_em datetime,
+    reenvios int (default 0), total_destinatarios int, criado_em
+
+  leituras_aviso: id, aviso_id FK, funcionario_id FK, lido_em datetime, ip,
+    via ENUM(POPUP_LOGIN|NOTIFICACAO_SISTEMA|SINO)
+    [Unique constraint em (aviso_id, funcionario_id)]
+
+  ─── AUDITORIA ───────────────────────────────────────────────────────────────
+
+  logs_auditoria: id, empresa_id, funcionario_id FK,
+    acao, modulo, item_tipo, item_id,
+    valor_antes JSON, valor_depois JSON, ip, user_agent, criado_em
+    [NUNCA deletar. Append-only. Índice em (empresa_id, criado_em)]
+
+  logs_seguranca: id, empresa_id, funcionario_id FK,
+    evento ENUM(LOGIN_SUCESSO|LOGIN_FALHOU|SENHA_ALTERADA|ACESSO_NEGADO|
+                IP_SUSPEITO|TOKEN_INVALIDO|LOGOUT),
+    ip, user_agent, tentativas (default 1), bloqueado (default false), criado_em
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 06 — SISTEMA DE PERMISSÕES RBAC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Usar strings de permissão granulares. JWT contém: base_do_perfil + extras - removidas.
+  Middleware RBAC verifica se o token contém a permissão antes de cada rota.
+
+  LISTA COMPLETA DE PERMISSÕES:
+
+  AUTENTICAÇÃO: perm_login | perm_alterar_propria_senha
+
+  PRODUTOS: perm_produto_listar | perm_produto_ver_custo (SOMENTE ADMIN)
+    perm_produto_criar | perm_produto_editar | perm_produto_deletar
+    perm_produto_ver_estoque | perm_produto_ajustar_estoque
+
+  VENDAS: perm_venda_criar | perm_venda_listar_proprias | perm_venda_listar_todas
+    perm_venda_cancelar (SOMENTE ADMIN) | perm_venda_ver_custo (SOMENTE ADMIN)
+    perm_venda_desconto_limite | perm_venda_desconto_ilimitado (SOMENTE ADMIN)
+    perm_orcamento_criar | perm_orcamento_aprovar
+    perm_devolucao_criar | perm_devolucao_aprovar
+
+  PRODUÇÃO: perm_op_criar | perm_op_listar | perm_op_atualizar_status
+    perm_op_registrar_refugo | perm_op_concluir | perm_op_cancelar
+
+  ALMOXARIFADO: perm_almox_entrada_mercadoria | perm_almox_separacao
+    perm_ferramenta_listar | perm_ferramenta_saida | perm_ferramenta_devolucao
+    perm_ferramenta_override (SOMENTE ADMIN)
+
+  FINANCEIRO: perm_financeiro_ver | perm_caixa_abrir | perm_caixa_fechar
+    perm_contas_listar | perm_contas_pagar | perm_relatorio_financeiro
+    perm_comissao_ver | perm_comissao_pagar
+
+  COMPRAS: perm_compra_criar | perm_compra_aprovar | perm_compra_receber
+
+  CLIENTES/FORNECEDORES: perm_cliente_listar | perm_cliente_criar | perm_cliente_editar
+    perm_fornecedor_listar | perm_fornecedor_criar
+
+  ADMINISTRAÇÃO: perm_funcionario_criar | perm_funcionario_editar | perm_funcionario_listar
+    perm_configuracoes_editar | perm_auditoria_ver | perm_relatorio_exportar
+    perm_notificacao_ver | perm_aviso_criar | perm_nfe_emitir
+
+  PERFIS PRÉ-DEFINIDOS:
+
+    ADMIN (ESCRITORIO): TODAS as permissões. Único com perm_produto_ver_custo.
+
+    VENDEDOR (VENDAS): perm_login | perm_alterar_propria_senha
+      perm_produto_listar | perm_produto_ver_estoque
+      perm_venda_criar | perm_venda_listar_proprias | perm_orcamento_criar
+      perm_venda_desconto_limite | perm_devolucao_criar
+      perm_cliente_listar | perm_cliente_criar | perm_notificacao_ver
+
+    ALMOXARIFE (ALMOXARIFADO): perm_login | perm_produto_listar | perm_produto_ver_estoque
+      perm_almox_entrada_mercadoria | perm_almox_separacao
+      perm_ferramenta_listar | perm_ferramenta_saida | perm_ferramenta_devolucao
+      perm_compra_receber | perm_notificacao_ver
+
+    OPERADOR_FABRICA (FABRICA): perm_login | perm_produto_listar | perm_produto_ver_estoque
+      perm_op_criar | perm_op_listar | perm_op_atualizar_status
+      perm_op_registrar_refugo | perm_op_concluir | perm_notificacao_ver
+
+    EXPEDIDOR (DISTRIBUIDORA): perm_login | perm_almox_separacao | perm_notificacao_ver
+
+    FINANCEIRO (ESCRITORIO): perm_login | perm_financeiro_ver
+      perm_caixa_abrir | perm_caixa_fechar | perm_contas_listar | perm_contas_pagar
+      perm_comissao_ver | perm_relatorio_financeiro | perm_devolucao_aprovar | perm_notificacao_ver
+
+  PERSONALIZAÇÃO: Admin pode adicionar permissoes_extras e remover via permissoes_removidas.
+  O array final gravado no JWT = base UNION extras MINUS removidas.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 07 — REGRAS DE NEGÓCIO INVIOLÁVEIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  REGRA 1 — SALDO REAL ANTI-FURO
+    estoque_disponivel = estoque_atual - SUM(itens_op.quantidade_plan WHERE status='RESERVADO')
+    Verificar NO BACKEND antes de confirmar venda ou abrir OP.
+    Se insuficiente: HTTP 409 com detalhes de qual produto faltou.
+    Também exibir visualmente em tempo real no frontend (TanStack Query polling ou WebSocket).
+
+  REGRA 2 — CICLO DE MATERIAL NA FÁBRICA
+    Ao abrir OP:    status = RESERVADO   → some do "disponível p/ venda"
+    Ao iniciar OP:  status = EM_PRODUCAO → material saiu da prateleira
+    Ao concluir OP: status = CONSUMIDO   → movimentacao CONSUMO_OP
+    Ao cancelar OP: status = DEVOLVIDO   → movimentacao DEVOLUCAO_OP
+
+  REGRA 3 — TRAVA DE FERRAMENTA
+    Backend REJEITA saída de ferramenta nova se funcionário já tem ferramenta
+    da MESMA CATEGORIA com status EM_USO.
+    Exceção: perm_ferramenta_override com motivo obrigatório, gravado no log.
+
+  REGRA 4 — SIGILO DE CUSTO ABSOLUTO
+    Serializer do backend filtra preco_custo:
+    if (!req.user.permissoes.includes('perm_produto_ver_custo')) {
+      delete produto.preco_custo; delete produto.margem;
+    }
+    NUNCA expor em itens_venda para perfis sem perm_venda_ver_custo.
+    Frontend TypeScript: tipo Produto tem preco_custo?: number (opcional) para refletir isso.
+
+  REGRA 5 — SEPARAÇÃO CONDICIONADA
+    Toda movimentacao_estoque de saída DEVE ter referencia_id e referencia_tipo.
+    Backend recusa sem origem. Exceção: ajuste com perm_produto_ajustar_estoque + motivo.
+
+  REGRA 6 — CANCELAMENTO COM SENHA ADMIN
+    PUT /vendas/:id/cancelar exige body.senha_admin.
+    Backend valida com bcrypt. Reverte movimentacoes_estoque.
+    Registra: cancelada_por, motivo_cancel, auditoria, IP.
+
+  REGRA 7 — ALERTAS ANTI-SEDEX (PROATIVOS)
+    node-cron verifica estoque a cada 5 minutos.
+    SE estoque_disponivel == 0              → 🔴 ESTOQUE_ZERO
+    SE estoque_disponivel <= estoque_minimo → 🟠 ESTOQUE_CRITICO
+    Anti-duplicata: nunca criar notificação se já existe não lida do mesmo tipo+produto.
+
+  REGRA 8 — HISTÓRICO DE PREÇOS APPEND-ONLY
+    Toda alteração em preco_custo ou preco_venda → inserir em historico_precos.
+    Nas vendas: salvar SNAPSHOT (preco_unit e preco_custo em itens_venda).
+
+  REGRA 9 — RETALHOS DE ALUMÍNIO
+    Corte com retalho_cm > 20 → criar automaticamente produto "Retalho [produto] [comp]cm".
+
+  REGRA 10 — DEVOLUÇÕES
+    Produto retorna como DISPONIVEL, DEFEITUOSO ou DESCARTE.
+    Crédito gerado em creditos_cliente com saldo_restante controlado.
+    Crédito pode abater total em novas vendas.
+    Movimentação DEVOLUCAO_CLIENTE obrigatória + log de auditoria.
+
+  REGRA 11 — ORÇAMENTO → VENDA
+    Ao converter: herda cliente, itens, desconto, observações.
+    Orçamento → APROVADO referenciando a venda. Venda referencia orcamento_id.
+
+  REGRA 12 — AVISOS DO CHEFE BLOQUEANTES
+    URGENTE → Modal fullscreen, z-index:9999, sem fechar, só "Li e Entendi".
+              Grava em leituras_aviso: aviso_id, funcionario_id, timestamp, IP, via.
+              Usuário não acessa nenhuma tela antes de confirmar.
+    NORMAL  → Modal fechável, mesma gravação.
+    Interceptar IMEDIATAMENTE após login no frontend (React Router loader ou useEffect em App.tsx).
+    Se funcionário logado receber aviso URGENTE via WebSocket: abrir modal imediatamente.
+
+  REGRA 13 — LOGS DE AUDITORIA APPEND-ONLY
+    NUNCA deletar registros de logs_auditoria. Exportável em CSV.
+
+  REGRA 14 — BUSCA DE CEP (ViaCEP)
+    Hook useCep.ts: ao digitar CEP válido (8 dígitos), chama ViaCEP e preenche campos.
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    Gratuito, sem chave de API, obrigatório no formulário de clientes.
+
+  REGRA 15 — MULTIEMPRESA BASE
+    Todo modelo tem empresa_id. Toda query inclui WHERE empresa_id = req.user.empresa_id.
+    Nunca cruzar dados entre empresas.
+
+  REGRA 16 — NF-e
+    Homologação SEFAZ por padrão. Nunca produção sem config explícita.
+    NUNCA reprocessar NF-e emitida — sempre cancelar e reemitir.
+
+  REGRA 17 — STATUS DE MATERIAL (TRANSIÇÕES PERMITIDAS)
+    EM_ESTOQUE   → RESERVADO     : ao abrir OP (automático)
+    EM_ESTOQUE   → DEFEITUOSO    : almoxarife registra dano (manual)
+    RESERVADO    → EM_ESTOQUE    : ao cancelar OP (automático)
+    RESERVADO    → EM_PRODUCAO   : operador confirma retirada (manual)
+    EM_PRODUCAO  → DESCARTADO    : consumo final ao concluir OP (automático)
+    EM_PRODUCAO  → EM_ESTOQUE    : material devolvido sem usar (manual)
+    DEFEITUOSO   → DESCARTADO    : admin decide (manual)
+    DEFEITUOSO   → EM_ESTOQUE    : admin decide reaproveitar (manual + aviso)
+    QUALQUER     → DEVOLVIDO     : devolução de cliente (manual)
+    DEVOLVIDO    → EM_ESTOQUE    : admin aprova retorno (manual)
+    DEVOLVIDO    → DEFEITUOSO    : admin classifica (manual)
+    DEVOLVIDO    → DESCARTADO    : admin descarta (manual)
+    Backend bloqueia transições inválidas (retornar 400).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 08 — API REST COMPLETA (TODAS AS ROTAS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Prefixo base: /api/v1
+  Todas as rotas (exceto /auth/login e /install/*) exigem: Authorization: Bearer {JWT}
+  Padrão: { sucesso: true, dados: {...} } | { sucesso: false, erro: "..." }
+
+  ─── AUTH ─────────────────────────────────────────────────────────────────────
+  POST /auth/login
+    body: { email, senha }
+    retorna: { token, refreshToken, usuario: { id, nome, setor, perfil_base, permissoes }, avisos_pendentes: [] }
+    bloqueia: 5 tentativas falhas em 10min → IP bloqueado 15min
+  POST /auth/logout | POST /auth/refresh | POST /auth/alterar-senha
+
+  ─── AVISOS DO CHEFE ──────────────────────────────────────────────────────────
+  GET  /avisos/pendentes                    → avisos não lidos para o usuário
+  POST /avisos/:id/registrar-leitura        body: { via }
+  POST /avisos                              requer: perm_aviso_criar
+  POST /avisos/:id/reenviar                 requer: perm_aviso_criar
+  GET  /avisos/:id/leituras                 requer: perm_aviso_criar
+  PUT  /avisos/:id/desativar                requer: perm_aviso_criar
+  GET  /avisos/enviados                     requer: perm_aviso_criar
+
+  ─── PRODUTOS ─────────────────────────────────────────────────────────────────
+  GET    /produtos                          filtra preco_custo por permissão. Inclui estoque_disponivel.
+  GET    /produtos/:id
+  POST   /produtos                          requer: perm_produto_criar
+  PUT    /produtos/:id                      requer: perm_produto_editar
+  DELETE /produtos/:id                      requer: perm_produto_deletar (soft delete)
+  GET    /produtos/:id/historico-precos     requer: perm_produto_ver_custo
+  GET    /produtos/:id/movimentacoes        requer: perm_produto_ver_estoque
+  POST   /produtos/:id/foto
+  GET    /produtos/alertas/ruptura
+
+  ─── CLIENTES E FORNECEDORES ──────────────────────────────────────────────────
+  GET    /clientes | GET /clientes/:id | POST /clientes | PUT /clientes/:id
+  GET    /clientes/:id/vendas | GET /clientes/:id/creditos | GET /clientes/aniversariantes/hoje
+  GET    /fornecedores | GET /fornecedores/:id | POST /fornecedores | PUT /fornecedores/:id
+
+  ─── ORÇAMENTOS ───────────────────────────────────────────────────────────────
+  GET    /orcamentos | GET /orcamentos/:id
+  POST   /orcamentos                        requer: perm_orcamento_criar
+  PUT    /orcamentos/:id | PUT /orcamentos/:id/status
+  GET    /orcamentos/:id/pdf
+  POST   /orcamentos/:id/converter-venda    requer: perm_venda_criar
+  POST   /orcamentos/:id/converter-op       requer: perm_op_criar
+
+  ─── VENDAS ───────────────────────────────────────────────────────────────────
+  GET    /vendas | GET /vendas/:id
+  POST   /vendas                            requer: perm_venda_criar
+    VALIDAÇÕES: saldo disponível >= qtd solicitada | desconto > limite → solicitação PENDENTE
+    AO CONFIRMAR: movimentacao SAIDA_VENDA | contas_receber se APRAZO | comissao | garantia | WebSocket
+  PUT    /vendas/:id/cancelar               requer: perm_venda_cancelar + senha_admin
+  PUT    /vendas/:id/status
+  POST   /vendas/:id/nfe                    requer: perm_nfe_emitir
+  GET    /vendas/:id/whatsapp
+  POST   /vendas/solicitacao-desconto/:id/aprovar   requer: perm_venda_desconto_ilimitado
+
+  ─── DEVOLUÇÕES ───────────────────────────────────────────────────────────────
+  GET    /devolucoes | GET /devolucoes/:id
+  POST   /devolucoes                        requer: perm_devolucao_criar
+  PUT    /devolucoes/:id/aprovar            requer: perm_devolucao_aprovar
+    → produto volta ao estoque | movimentacao DEVOLUCAO_CLIENTE | credito_cliente | auditoria
+  PUT    /devolucoes/:id/rejeitar           requer: perm_devolucao_aprovar
+
+  ─── PRODUÇÃO ─────────────────────────────────────────────────────────────────
+  GET    /producao/ops | GET /producao/ops/:id | GET /producao/dashboard | GET /producao/retalhos
+  POST   /producao/ops                      requer: perm_op_criar
+    → verificar estoque | criar itens RESERVADO | movimentacao RESERVA_OP | WebSocket
+  PUT    /producao/ops/:id/iniciar
+  PUT    /producao/ops/:id/etapa/:id/iniciar | concluir
+  POST   /producao/ops/:id/refugo           requer: perm_op_registrar_refugo
+  POST   /producao/ops/:id/corte            → calcula retalho; se > 20cm cria produto
+  PUT    /producao/ops/:id/concluir         requer: perm_op_concluir; foto obrigatória; gera QR Code
+  PUT    /producao/ops/:id/cancelar         requer: perm_op_cancelar; reverte RESERVA_OP
+  POST   /producao/ops/:id/foto
+
+  ─── ALMOXARIFADO ─────────────────────────────────────────────────────────────
+  POST   /almoxarifado/entrada              requer: perm_almox_entrada_mercadoria
+    body deve incluir localizacao (obrigatório). Cria movimentacao ENTRADA_COMPRA.
+  POST   /almoxarifado/entrada/xml
+    → parseia XML NF-e | match por EAN | itens não encontrados → notifica admin
+    → confirmação obrigatória antes de dar entrada | cria conta a pagar
+  GET    /almoxarifado/ferramentas          requer: perm_ferramenta_listar
+  POST   /almoxarifado/ferramentas/saida    requer: perm_ferramenta_saida
+    → bloqueia se funcionário tem ferramenta da MESMA CATEGORIA em EM_USO
+  POST   /almoxarifado/ferramentas/devolucao-ou-troca   requer: perm_ferramenta_devolucao
+  GET    /almoxarifado/separacoes-pendentes
+  PUT    /almoxarifado/separacoes/:venda_id/confirmar   requer: perm_almox_separacao
+  GET    /almoxarifado/mapa
+  GET    /almoxarifado/fila-avaria
+  PUT    /almoxarifado/fila-avaria/:id/decidir          requer: perm_produto_ajustar_estoque
+
+  ─── FINANCEIRO ───────────────────────────────────────────────────────────────
+  GET    /financeiro/resumo | /contas-receber | /contas-pagar
+  GET    /financeiro/fluxo-caixa | /dre | /comissoes
+  GET    /financeiro/pendencias-dia         requer: perm_configuracoes_editar (para pop-up admin)
+    → retorna: estoques_zerados, ops_bloqueadas, descontos_pendentes, estoques_criticos,
+      ops_atrasadas, contas_vencer_hoje, pcs_aguardando, ferramentas_perdidas,
+      produtos_cadastro_pendente, fila_avaria, clientes_vip_inativos
+    → cachear Redis 5min
+  POST   /caixa/abrir | POST /caixa/fechar
+
+  ─── COMPRAS ──────────────────────────────────────────────────────────────────
+  GET    /compras | GET /compras/sugestao
+  POST   /compras | PUT /compras/:id/aprovar
+  PUT    /compras/:id/receber
+    body: { itens_recebidos: [{ produto_id, quantidade_recebida, localizacao }] }
+    localizacao OBRIGATÓRIO. "Tudo OK" disponível no frontend.
+    Se divergência → notificação DIVERGENCIA_RECEBIMENTO automática.
+
+  ─── NF-e ─────────────────────────────────────────────────────────────────────
+  GET    /nfe | GET /nfe/:id
+  POST   /nfe/emitir                        requer: perm_nfe_emitir
+    → XML padrão NF-e 4.00 (homologação) | PDF DANFE | arquiva com URL
+  PUT    /nfe/:id/cancelar | GET /nfe/:id/xml | GET /nfe/:id/pdf
+
+  ─── RELATÓRIOS ───────────────────────────────────────────────────────────────
+  GET    /relatorios/vendas | /estoque | /movimentacoes | /ops
+  GET    /relatorios/ferramentas | /comissoes | /refugo | /devolucoes | /orcamentos
+  GET    /relatorios/executivo | /previsao-demanda
+
+  ─── NOTIFICAÇÕES ─────────────────────────────────────────────────────────────
+  GET    /notificacoes | PUT /notificacoes/:id/ler | PUT /notificacoes/ler-todas
+
+  ─── AUDITORIA ────────────────────────────────────────────────────────────────
+  GET    /auditoria/logs | GET /auditoria/seguranca         requerem: perm_auditoria_ver
+
+  ─── CONFIGURAÇÕES ────────────────────────────────────────────────────────────
+  GET    /configuracoes | PUT /configuracoes | POST /configuracoes/testar-gemini
+  POST   /configuracoes/backup | POST /configuracoes/restore
+
+  ─── SAÚDE DO SISTEMA ─────────────────────────────────────────────────────────
+  GET    /dev/health
+    retorna: { timestamp, status_geral: "OK"|"DEGRADADO"|"CRITICO",
+      banco: { status, latencia_ms }, cache: { status, latencia_ms },
+      api: { status, uptime_horas, versao },
+      erros_hoje: { total, ultimos: [] },
+      performance: { media_ms, min_ms, max_ms, p95_ms },
+      memoria: { heap_usado_mb, heap_total_mb },
+      filas: { descontos_pendentes, pcs_pendentes, ops_atrasadas,
+               separacoes_pendentes, ferramentas_manutencao, notificacoes_admin },
+      conexoes: { websocket_ativas, sessoes_ativas },
+      disco_uploads_mb, ultimo_backup_dias }
+
+  ─── IA / GEMINI ──────────────────────────────────────────────────────────────
+  GET    /ia/contexto
+  POST   /ia/chat                           body: { mensagem, historico }
+
+  ─── BUSCA GLOBAL ─────────────────────────────────────────────────────────────
+  GET    /busca?q={termo}
+    → busca em: produtos, clientes, fornecedores, vendas, OPs, funcionários
+    → retorna: [{ tipo, id, nome, detalhe, link }]
+
+  ─── WIZARD DE INSTALAÇÃO ─────────────────────────────────────────────────────
+  GET    /install | POST /install/api/test-db | POST /install/api/executar
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 09 — DESIGN SYSTEM REACT + TAILWIND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ─── CSS VARIABLES (globals.css) ─────────────────────────────────────────────
+
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --cinza-1:    #0b1114;
+    --cinza-2:    #121b1e;
+    --cinza-3:    #192529;
+    --cinza-4:    #213035;
+    --verde:      #4ade80;
+    --verde-dark: #22c55e;
+    --verde-deep: #14532d;
+    --verde-glow: rgba(74,222,128,0.20);
+    --verde-faint:rgba(74,222,128,0.08);
+    --branco:     #ffffff;
+    --text-mid:   #e2e8f0;
+    --text-dim:   #94a3b8;
+    --border:     rgba(74,222,128,0.20);
+  }
+
+  ─── COMPONENTES BASE (Tailwind classes) ─────────────────────────────────────
+
+  TOPBAR:
+    Classes: fixed top-0 left-0 right-0 h-[65px] z-40
+    bg: bg-[#0b1114]/95 backdrop-blur-xl border-b border-[var(--border)]
+
+  SIDEBAR (260px desktop, overlay mobile):
+    desktop: fixed left-0 top-[65px] h-[calc(100vh-65px)] w-[260px]
+    mobile: fixed inset-0 z-50 w-[280px] transform transition-transform
+    bg: bg-cinza-1 border-r border-[var(--border)]
+    item ativo: bg-verde/10 text-verde border-l-[3px] border-verde
+    item hover: bg-white/[0.04] transition-colors
+
+  CARDS KPI (KpiCard.tsx):
+    bg-cinza-2 border border-white/5 rounded-lg p-6
+    border-left: border-l-[3px] border-l-{cor}
+    valor: font-syne font-extrabold text-3xl
+    label: font-sans font-bold text-xs uppercase tracking-[2px] text-text-dim
+    trend: ▲ text-verde | ▼ text-red-400
+
+  BOTÃO PRIMÁRIO:
+    bg-verde text-cinza-1 font-bold rounded-md px-4 py-2
+    shadow-verde hover:-translate-y-0.5 hover:bg-verde-dark transition-all
+
+  BOTÃO SECUNDÁRIO:
+    bg-cinza-2 text-text-mid border border-white/20 rounded-md px-4 py-2
+    hover:border-verde hover:text-verde transition-all
+
+  BOTÃO DANGER:
+    bg-red-500/15 text-red-300 border border-red-500/40 rounded-md px-4 py-2
+    hover:bg-red-500/25 transition-all
+
+  TABELAS (TanStack Table):
+    container: bg-cinza-1 rounded-lg border border-white/[0.08] overflow-hidden
+    th: bg-cinza-3 text-verde font-bold text-xs uppercase tracking-[2px] px-5 py-3
+    th border-b: border-b-2 border-[var(--border)]
+    td: px-5 py-4 border-b border-white/[0.04] font-sans
+    row hover: hover:bg-white/[0.03] transition-colors
+    valores R$ (só admin): text-verde font-mono font-extrabold
+
+  SEMÁFORO ESTOQUE (EstoqueIndicador.tsx):
+    🟢 acima do mínimo: text-verde | 🟡 igual ao mínimo: text-yellow-400
+    🔴 abaixo ou zero: text-red-400 animate-pulse
+
+  GRÁFICO DE BARRAS (BarChart.tsx com Recharts):
+    Usar Recharts BarChart com animação isAnimationActive={true}
+    activeBar com fill destacado, Tooltip customizado com bg-cinza-2
+    ResponsiveContainer width="100%" height={200}
+    Cores: #fde047 | #4ade80 | #38bdf8 | #fb923c | #a78bfa | #f87171 | #2dd4bf
+
+  GRÁFICO DE LINHA (LineChart.tsx com Recharts):
+    Area com gradiente de verde para transparente
+    strokeColor: var(--verde), fillOpacity animado
+
+  CHAT IA (ChatIA.tsx — Framer Motion):
+    botão: fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-verde
+    animate: pulseVerde (Framer Motion whileHover + whileTap)
+    painel: AnimatePresence + motion.div com initial={y:20,opacity:0}
+    w-[380px] h-[520px] bg-cinza-1 border border-[var(--border)] rounded-t-xl
+    balão usuário: self-end bg-verde/10 border border-verde text-text-mid rounded-[8px_8px_0_8px]
+    balão IA: self-start bg-cinza-3 border border-white/10 rounded-[8px_8px_8px_0]
+    typing indicator: 3 spans com animation delay 0ms, 150ms, 300ms
+
+  TOAST (via Sonner):
+    <Toaster position="top-right" theme="dark" />
+    Customizar com toastOptions: { style: { background: '#121b1e', border: '1px solid ...' } }
+
+  MODAL PADRÃO (via Radix Dialog):
+    DialogOverlay: bg-black/75 backdrop-blur-sm
+    DialogContent: bg-cinza-2 border border-[var(--border)] rounded-xl p-8
+    entrada: motion.div com scaleIn (Framer Motion)
+
+  MODAL URGENTE (AvisoModal.tsx):
+    Overlay: fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md
+    Box: bg-red-950/30 border-2 border-red-400 rounded-xl p-8
+    Sem botão X, sem Escape. Só "Li e Entendi ✅"
+    Grava leitura com IP ao confirmar (via api.ts).
+
+  BANNER DEMO (DemoBanner.tsx):
+    fixed top-0 left-0 right-0 z-50 h-8 bg-orange-500
+    text-xs font-bold text-center "⚠️ MODO DEMONSTRAÇÃO — Dados fictícios"
+    Visível apenas quando DEMO_MODE=true (info vem do /auth/login response)
+
+  STATUS BADGES (Badge.tsx):
+    CONFIRMADA/ATIVO: bg-verde/20 text-verde | EM_PRODUCAO: bg-blue-500/20 text-blue-400
+    PAUSADA: bg-yellow-500/20 text-yellow-400 | CANCELADA: bg-red-500/20 text-red-400
+    CONCLUIDA: bg-verde/10 text-verde/70 | PLANEJADA: bg-white/10 text-text-dim
+
+  FÁBRICA (Producao.tsx — mobile-first):
+    Botões mínimos: min-h-[60px] text-lg font-bold
+    touch-action: manipulation para resposta rápida
+    Padding aumentado: px-6 py-5
+
+  ─── DASHBOARD — LAYOUT EXATO ────────────────────────────────────────────────
+
+  grid grid-cols-4 gap-4 mb-6     ← 4 KPI cards
+  grid grid-cols-[1fr_320px] gap-4 ← gráfico barras | feed alertas
+
+  KPIs: Faturamento Hoje | OPs Ativas | Alertas Críticos | Créditos Pendentes
+  Dados atualizados via WebSocket (useSocket hook) + TanStack Query invalidation.
+
+  ─── TIPOGRAFIA ───────────────────────────────────────────────────────────────
+
+  Syne 800   → className="font-syne font-extrabold"
+  DM Sans    → className="font-sans" (default)
+  DM Mono    → className="font-mono" (valores monetários, quantidades, timestamps)
+
+  ─── RESPONSIVIDADE ───────────────────────────────────────────────────────────
+
+  1440px+: sidebar fixa, grid 4 colunas
+  1024px: sidebar fixa, grid 3 colunas
+  768px: sidebar collapsível, grid 2 colunas
+  375px: hamburger overlay, grid 1 col, botões fábrica 60px mínimo
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 10 — ARQUITETURA REACT + TYPESCRIPT (DETALHADA)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ─── frontend/src/types/api.ts ────────────────────────────────────────────────
+
+  // Todos os tipos de resposta da API. NUNCA usar `any`.
+  export interface ApiResponse<T> { sucesso: true; dados: T }
+  export interface ApiError { sucesso: false; erro: string }
+  export type ApiResult<T> = ApiResponse<T> | ApiError
+
+  export interface Usuario {
+    id: number
+    nome: string
+    email: string
+    setor: 'ESCRITORIO' | 'ALMOXARIFADO' | 'VENDAS' | 'DISTRIBUIDORA' | 'FABRICA'
+    perfil_base: 'ADMIN' | 'VENDEDOR' | 'ALMOXARIFE' | 'OPERADOR_FABRICA' | 'EXPEDIDOR' | 'FINANCEIRO'
+    permissoes: string[]
+    empresa_id: number
+    primeiro_acesso: boolean
+  }
+
+  export interface LoginResponse {
+    token: string
+    refreshToken: string
+    usuario: Usuario
+    avisos_pendentes: Aviso[]
+    demo_mode: boolean
+  }
+
+  export interface Produto {
+    id: number
+    codigo: string
+    nome: string
+    unidade: 'UN' | 'ML' | 'M2' | 'KG' | 'PCT' | 'KIT' | 'M3' | 'M'
+    preco_venda: number
+    preco_custo?: number   // opcional — servidor filtra por permissão
+    margem?: number        // opcional — servidor filtra por permissão
+    estoque_atual: number
+    estoque_reservado: number
+    estoque_disponivel: number
+    estoque_minimo: number
+    localizacao_display?: string
+    categoria?: { id: number; nome: string; cor_hex?: string }
+    alerta?: 'ZERO' | 'CRITICO' | null
+  }
+
+  // ... definir interfaces para: Venda, ItemVenda, OP, Ferramenta, Cliente,
+  // Fornecedor, Orcamento, Devolucao, NfeEmissao, Notificacao, Aviso,
+  // LeituraAviso, Caixa, ContaReceber, ContaPagar, Comissao, LogAuditoria, etc.
+
+  ─── frontend/src/lib/api.ts ──────────────────────────────────────────────────
+
+  // Axios instance com interceptors.
+  // Request interceptor: anexa Authorization: Bearer {token} de authStore.
+  // Response interceptor: se 401 → tenta refresh; se refresh falhar → logout.
+  // Toda função retorna o tipo correto de ApiResponse<T>.
+
+  import axios from 'axios'
+  import { useAuthStore } from '@/store/authStore'
+
+  export const api = axios.create({ baseURL: '/api/v1' })
+
+  api.interceptors.request.use(config => {
+    const token = useAuthStore.getState().token
+    if (token) config.headers.Authorization = `Bearer ${token}`
+    return config
+  })
+
+  api.interceptors.response.use(
+    res => res,
+    async error => {
+      if (error.response?.status === 401) {
+        // tentar refresh → se falhar → useAuthStore.getState().logout()
+      }
+      return Promise.reject(error)
+    }
+  )
+
+  ─── frontend/src/store/authStore.ts ─────────────────────────────────────────
+
+  // Zustand store. Persistido em sessionStorage.
+  import { create } from 'zustand'
+  import { persist } from 'zustand/middleware'
+
+  interface AuthState {
+    token: string | null
+    refreshToken: string | null
+    usuario: Usuario | null
+    demoMode: boolean
+    login: (data: LoginResponse) => void
+    logout: () => void
+    hasPermissao: (perm: string) => boolean
+    hasAnyPermissao: (...perms: string[]) => boolean
+  }
+
+  export const useAuthStore = create<AuthState>()(
+    persist(
+      (set, get) => ({
+        // ... implementação completa
+        hasPermissao: (perm) => get().usuario?.permissoes.includes(perm) ?? false,
+        hasAnyPermissao: (...perms) => perms.some(p => get().hasPermissao(p)),
+      }),
+      { name: 'vidrato-auth', storage: sessionStorageAdapter }
+    )
+  )
+
+  ─── frontend/src/router/ProtectedRoute.tsx ──────────────────────────────────
+
+  // Verifica: autenticado + (se fornecida) permissão específica.
+  // Se não autenticado: <Navigate to="/login" replace />
+  // Se não tem permissão: <Navigate to="/nao-autorizado" replace />
+
+  interface ProtectedRouteProps {
+    permissao?: string
+    children: React.ReactNode
+  }
+
+  ─── frontend/src/router/index.tsx ───────────────────────────────────────────
+
+  // React Router v6 com lazy loading por módulo.
+  // Todas as rotas dentro de <ProtectedRoute>.
+  // Rota pública: /login (PublicRoute) e /cliente/:token.
+
+  const Dashboard      = lazy(() => import('@/pages/Dashboard'))
+  const Vendas         = lazy(() => import('@/pages/Vendas'))
+  const Orcamentos     = lazy(() => import('@/pages/Orcamentos'))
+  const Devolucoes     = lazy(() => import('@/pages/Devolucoes'))
+  const NFe            = lazy(() => import('@/pages/NFe'))
+  const Producao       = lazy(() => import('@/pages/Producao'))
+  const Almoxarifado   = lazy(() => import('@/pages/Almoxarifado'))
+  const Clientes       = lazy(() => import('@/pages/Clientes'))
+  const Fornecedores   = lazy(() => import('@/pages/Fornecedores'))
+  const Financeiro     = lazy(() => import('@/pages/Financeiro'))
+  const Relatorios     = lazy(() => import('@/pages/Relatorios'))
+  const Funcionarios   = lazy(() => import('@/pages/Funcionarios'))
+  const Configuracoes  = lazy(() => import('@/pages/Configuracoes'))
+  const Auditoria      = lazy(() => import('@/pages/Auditoria'))
+  const SaudeDoSistema = lazy(() => import('@/pages/SaudeDoSistema'))
+
+  ─── frontend/src/App.tsx ─────────────────────────────────────────────────────
+
+  // Providers: QueryClientProvider + Toaster (Sonner) + Router
+  // Ao montar: verificar avisos pendentes via TanStack Query
+  // Se houver aviso URGENTE: renderizar <AvisoModal /> com estado local
+  // Se primeiro login do dia: renderizar <BemVindoModal />
+  // useSocket: conectar socket.io e ouvir 'nova_notificacao' e 'novo_aviso_chefe'
+
+  ─── frontend/src/hooks/usePermissao.ts ──────────────────────────────────────
+
+  export function usePermissao(perm: string): boolean {
+    return useAuthStore(state => state.hasPermissao(perm))
+  }
+
+  export function useAnyPermissao(...perms: string[]): boolean {
+    return useAuthStore(state => state.hasAnyPermissao(...perms))
+  }
+
+  // Uso nos componentes:
+  // const podeVerCusto = usePermissao('perm_produto_ver_custo')
+  // if (!podeVerCusto) return null — esconder seção de custo
+
+  ─── frontend/src/hooks/useCep.ts ─────────────────────────────────────────────
+
+  // Hook para React Hook Form. Ao digitar 8 dígitos válidos, busca ViaCEP.
+  export function useCep(setValue: UseFormSetValue<any>) {
+    return useCallback(async (cep: string) => {
+      const clean = cep.replace(/\D/g, '')
+      if (clean.length !== 8) return
+      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        setValue('endereco', data.logradouro)
+        setValue('bairro',   data.bairro)
+        setValue('cidade',   data.localidade)
+        setValue('estado',   data.uf)
+      }
+    }, [setValue])
+  }
+
+  ─── frontend/src/components/BuscaGlobal.tsx ─────────────────────────────────
+
+  // Atalho Ctrl+K / Cmd+K. Modal Radix com input + resultados.
+  // TanStack Query com enabled: !!debouncedQuery (useDebounce 300ms).
+  // Cada resultado clicável navega via useNavigate().
+  // Ícone por tipo: Package (produto), Users (cliente), Truck (fornecedor),
+  //                 ShoppingCart (venda), Wrench (OP), User (funcionário)
+
+  ─── frontend/src/components/ChatIA.tsx ──────────────────────────────────────
+
+  // Estado local com histórico da sessão: Message[] = { role, content, timestamp }
+  // useMutation para POST /ia/chat via TanStack Query
+  // AnimatePresence para entrada/saída do painel
+  // Auto-scroll para última mensagem (useRef + useEffect)
+  // Chips de sugestão: "Estoque crítico", "Top vendidos", "OPs abertas", "Previsão demanda"
+  // Typing indicator: 3 pontos pulsantes via CSS animation
+
+  ─── TanStack Query — Padrão de uso ──────────────────────────────────────────
+
+  // QUERIES — leitura de dados:
+  export function useProdutos(filtros?: FiltrosProdutos) {
+    return useQuery({
+      queryKey: ['produtos', filtros],
+      queryFn: () => api.get<ApiResponse<Produto[]>>('/produtos', { params: filtros })
+                        .then(r => r.data.dados),
+      staleTime: 1000 * 30, // 30s
+    })
+  }
+
+  // MUTATIONS — escrita de dados:
+  export function useCriarVenda() {
+    const qc = useQueryClient()
+    return useMutation({
+      mutationFn: (data: CriarVendaInput) =>
+        api.post<ApiResponse<Venda>>('/vendas', data).then(r => r.data.dados),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: ['vendas'] })
+        qc.invalidateQueries({ queryKey: ['produtos'] }) // atualiza estoque
+        toast.success('Venda confirmada com sucesso!')
+      },
+      onError: (err: AxiosError<ApiError>) => {
+        toast.error(err.response?.data?.erro ?? 'Erro ao criar venda')
+      }
+    })
+  }
+
+  // Convenção: um arquivo por domínio em src/hooks/queries/
+  // useVendas.ts | useProdutos.ts | useOPs.ts | etc.
+
+  ─── Sidebar dinâmica por permissões ─────────────────────────────────────────
+
+  // Sidebar.tsx usa useAuthStore + usePermissao para renderizar apenas
+  // os itens que o usuário logado pode acessar.
+  const menuItems = [
+    { path: '/dashboard',     label: 'Dashboard',     icon: LayoutDashboard, perm: null },
+    { path: '/vendas',        label: 'PDV / Vendas',  icon: ShoppingCart,    perm: 'perm_venda_criar' },
+    { path: '/orcamentos',    label: 'Orçamentos',    icon: FileText,        perm: 'perm_orcamento_criar' },
+    { path: '/devolucoes',    label: 'Devoluções',    icon: RefreshCw,       perm: 'perm_devolucao_criar' },
+    { path: '/nfe',           label: 'NF-e',          icon: Receipt,         perm: 'perm_nfe_emitir' },
+    { path: '/producao',      label: 'Produção',      icon: Factory,         perm: 'perm_op_listar' },
+    { path: '/almoxarifado',  label: 'Almoxarifado',  icon: Package,         perm: 'perm_almox_separacao' },
+    { path: '/clientes',      label: 'Clientes',      icon: Users,           perm: 'perm_cliente_listar' },
+    { path: '/financeiro',    label: 'Financeiro',    icon: DollarSign,      perm: 'perm_financeiro_ver' },
+    { path: '/relatorios',    label: 'Relatórios',    icon: BarChart2,       perm: 'perm_relatorio_exportar' },
+    { path: '/funcionarios',  label: 'Funcionários',  icon: UserCog,         perm: 'perm_funcionario_listar' },
+    { path: '/configuracoes', label: 'Configurações', icon: Settings,        perm: 'perm_configuracoes_editar' },
+    { path: '/auditoria',     label: 'Auditoria',     icon: Shield,          perm: 'perm_auditoria_ver' },
+  ]
+  // Filtrar: item.perm === null || hasPermissao(item.perm)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 11 — MÓDULOS FRONTEND (PÁGINAS E COMPONENTES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  MOD 01 — Login.tsx
+    Form React Hook Form + Zod. email + senha. Mostrar/ocultar senha.
+    useMutation para POST /auth/login. onSuccess: authStore.login(data) + navigate('/').
+    onError: mensagem inline. Enter para submeter.
+
+  MOD 02 — App.tsx (interceptor de avisos + pop-up de boas-vindas)
+    Após login bem-sucedido (token presente):
+    1. useQuery(['avisos-pendentes']) → busca GET /avisos/pendentes
+    2. Se há aviso URGENTE não lido: renderizar <AvisoModal aviso={urgente} />
+       AvisoModal é bloqueante (pointer-events none no resto da app)
+       Botão "Li e Entendi" chama POST /avisos/:id/registrar-leitura { via: 'NOTIFICACAO_SISTEMA' }
+       Então invalida query de avisos e verifica próximo URGENTE.
+    3. Após todos os URGENTEs confirmados: verificar localStorage `vidrato_popup_{id}_{date}`
+       Se ausente: renderizar <BemVindoModal /> com dados de pendências (admin) e responsabilidades
+       Botão "Entendido — Começar o dia ✅" grava no localStorage e fecha.
+    useSocket: ouvir 'novo_aviso_chefe' → se URGENTE: abrir AvisoModal imediatamente.
+
+  MOD 03 — Dashboard.tsx
+    4 x <KpiCard> em grid-cols-4.
+    <BarChart /> com Top 7 produtos mais movimentados (Recharts, isAnimationActive).
+    Feed de alertas: lista de notificações não lidas, ordenada por criticidade.
+    Feed atualiza em tempo real via socket.on('nova_notificacao').
+    TanStack Query com staleTime curto (10s) para os KPIs.
+
+  MOD 04 — Vendas.tsx (PDV completo)
+    Input de busca com useDebounce 300ms → useQuery(['produtos', busca]).
+    TanStack Table para listar produtos com colunas: Código | Nome | Un | Preço | Total | Disp. | +.
+    <EstoqueIndicador estoque={p.estoque_disponivel} minimo={p.estoque_minimo} />.
+    Carrinho: estado local (useState<CarrinhoItem[]>), editar qtd, remover, desconto.
+    Ao adicionar cliente: aplicar tabela de preços automaticamente (useQuery cliente).
+    Botão "Solicitar Desconto Extra" → useMutation, venda fica RASCUNHO.
+    onSuccess: toast.success + link WhatsApp via window.open(waUrl).
+    Aba "Orçamentos pendentes": tabela com botão "Converter em Venda".
+    Aba "Amostras": formulário com cliente + data follow-up.
+    Comanda aberta: botão "Tab Aberta" para acumular itens ao longo do atendimento.
+
+  MOD 05 — Orcamentos.tsx
+    Lista com <Badge status={orcamento.status} />, validade, cliente.
+    Modal de criação/edição com React Hook Form.
+    Preview do PDF usando @react-pdf/renderer em <PDFViewer>.
+    Botões: "Converter para Venda" (useMutation) | "Converter para OP" | "Enviar WhatsApp".
+    Filtros por status com Radix Tabs.
+
+  MOD 06 — Devolucoes.tsx
+    Lista com filtros por status e tipo.
+    Formulário: selecionar venda, selecionar itens, motivo, tipo (DEVOLUCAO/TROCA).
+    destino_estoque por item: radio DISPONIVEL | DEFEITUOSO | DESCARTE.
+    Aprovação/rejeição: useMutation com confirmação Radix AlertDialog.
+    Histórico de créditos do cliente com saldo disponível.
+
+  MOD 07 — NFe.tsx
+    Lista com status badges e actions (download XML, download PDF).
+    Formulário de emissão: selecionar venda ou orcamento, ou emissão avulsa.
+    Download: api.get('/nfe/:id/xml', { responseType: 'blob' }) → saveAs.
+    Badge pulsante para status RASCUNHO (aguardando emissão).
+
+  MOD 08 — Producao.tsx (MOBILE-FIRST — min-h-[60px] botões)
+    4 botões gigantes principais: NOVA OP | MINHAS OPs | REGISTRAR REFUGO | REGISTRAR CORTE.
+    NOVA OP: Stepper de 3 passos com Framer Motion (tipo → medidas+materiais → confirmar).
+    Lista de OPs: cards com status, prazo, % de etapas concluídas.
+    Detalhe da OP: etapas com botão Iniciar/Concluir cada uma (cronômetro visual).
+    Foto ao concluir: <input type="file" accept="image/*" capture="environment" />.
+    QR Code gerado: <QRCodeSVG value={opUrl} /> de qrcode.react.
+    Dashboard admin (dentro da mesma página, aba separada): OPs hoje, atrasadas, tempo médio.
+
+  MOD 09 — Almoxarifado.tsx
+    Tabs: Estoque | Entrada | Ferramentas | Separações | Mapa | Fila de Avaria.
+
+    Estoque: TanStack Table com busca, sem valores R$.
+    Entrada: formulário com campo localizacao (obrigatório) + botão "Tudo OK" para qtd.
+             Upload XML NF-e: <input type="file" accept=".xml" />.
+    Ferramentas: tabela com <Badge status /> e posse. Modal Saída/Devolução com validação.
+    Separações: lista de vendas CONFIRMADA aguardando. Botão "Confirmar Separação".
+    Mapa do Galpão: CSS Grid com células coloridas por status de estoque.
+                   Hover mostra tooltip com produto. Click abre modal com lista.
+                   Input de busca destaca a célula do produto no grid.
+    Fila de Avaria: itens DEFEITUOSO e DEVOLVIDO. Radix Select para decidir destino.
+
+  MOD 10 — Clientes.tsx
+    Lista com filtros por classificação, cidade. Badge 🎂 para aniversariantes.
+    Formulário: React Hook Form + useCep hook (preenche endereço automático).
+    Perfil do cliente: tabs Dados | Compras | Devoluções | Créditos.
+    Botão "Enviar WhatsApp" e "Enviar parabéns no WhatsApp" (window.open waUrl).
+
+  MOD 11 — Financeiro.tsx
+    Tabs: KPIs | Contas a Receber | Contas a Pagar | Fluxo de Caixa | DRE | Caixa | Comissões | Garantias.
+    KPIs: 4 cards com Recharts mini sparklines.
+    Fluxo de Caixa: <LineChart /> do Recharts.
+    DRE: cards com valores e variação percentual mês a mês.
+    Caixa: botão Abrir/Fechar. Formulário de fechamento com totais por forma.
+
+  MOD 12 — Relatorios.tsx
+    Grid de cards de relatórios disponíveis.
+    Ao clicar: filtros → Gerar → exibir preview ou download.
+    Exportar PDF: window.print() com @media print CSS.
+    Exportar CSV: Blob download via api response.
+    Relatório Executivo: <PDFViewer> com @react-pdf/renderer.
+    Previsão de Demanda: tabela + <BarChart /> com projeção 30 dias.
+
+  MOD 13 — Funcionarios.tsx
+    TanStack Table com busca, filtro por setor/perfil/status.
+    Formulário: React Hook Form. Select de perfil_base preenche checkboxes automaticamente.
+    Seção permissoes_extras (checkboxes) e permissoes_removidas (checkboxes diferentes).
+    Ficha: dados + ferramentas em posse (tabela) + histórico de ações + meta mensal.
+
+  MOD 14 — Configuracoes.tsx
+    Tabs: Empresa | IA | Alertas | Sessão | Backup | Avisos do Chefe | Tabelas de Preço.
+
+    Empresa: upload de logo (input file + preview).
+    IA: campo API Key + botão "Testar Conexão" (useMutation → toast).
+    Avisos do Chefe:
+      Lista de avisos com barra de progresso de leitura (lido por X de Y).
+      Botão "Novo Aviso" → modal com: para quem, título, mensagem, prioridade, validade.
+      Botão "Reenviar para quem não leu" (useMutation).
+      Botão "Ver quem leu" (modal com lista + timestamps).
+    Backup: botão Exportar JSON (download) + Upload para Restaurar.
+
+  MOD 15 — SaudeDoSistema.tsx (/dev/health frontend)
+    useQuery com refetchInterval: 30_000 (auto-refresh 30s).
+    Grid 2x3 de cards de componentes: BD | Redis | API | WebSocket | Disco | RAM.
+    Cada card: ícone grande (CheckCircle verde / AlertTriangle amarelo / XCircle vermelho).
+    Framer Motion: animatePresence entre status (cor muda com transição suave).
+    4 KPIs do dia: Erros | Requisições | Performance média | Usuários online.
+    Tabela "Últimas 10 mais lentas" com TanStack Table.
+    Botão "Forçar verificação agora" + toggle "Auto-refresh".
+
+  MOD 16 — BemVindoModal.tsx (pop-up primeiro login do dia)
+    Renderizado por App.tsx após confirmar avisos URGENTES.
+    Verificar localStorage `vidrato_popup_{userId}_{YYYY-MM-DD}`.
+    Estrutura:
+      Logo + "Bom dia/tarde/noite, {nome}!" + data e hora atual (date-fns format + ptBR locale)
+      Badge do setor (bg colorido por setor)
+      [SE ADMIN] Pendências do dia: useQuery(['pendencias-dia'])
+                 Cada item com contagem > 0: ícone colorido + texto + número em badge.
+                 Se todas zeradas: "✅ Nenhuma pendência hoje!"
+      Responsabilidades do setor (componente ResponsabilidadesSetor baseado em setor do usuário)
+      [SE HOUVER AVISOS NORMAIS] Avisos navegáveis "1 de N →"
+      Botão "Entendido — Começar o dia ✅"
+    Ao fechar: localStorage.setItem(`vidrato_popup_${id}_${date}`, 'visto')
+
+    CONTEÚDO DE RESPONSABILIDADES POR SETOR:
+      ALMOXARIFADO:
+        📥 Conferir quantidade real ao receber mercadoria
+        📍 Registrar localização de tudo que entrar
+        ⚠️ Registrar defeitos encontrados imediatamente
+        🔧 Só entregar ferramenta nova recebendo a velha
+        ✅ Confirmar separação no sistema após separar fisicamente
+      FABRICA:
+        📋 Abrir OP ANTES de retirar qualquer material
+        📍 Verificar localização do material na OP
+        🗑️ Registrar refugo e retalhos durante a produção
+        ⚠️ Reportar material defeituoso imediatamente
+        📷 Tirar foto do produto ao concluir a OP
+      VENDAS:
+        👀 Verificar coluna "Disponível" antes de prometer ao cliente
+        ✅ Confirmar venda no sistema ANTES de mandar separar
+        🔄 Registrar toda devolução com motivo no sistema
+        💬 Solicitar desconto acima do limite pelo sistema
+        🖨️ Verificar impressora/forma de entrega ao confirmar venda
+      ESCRITORIO/ADMIN:
+        🆕 Cadastrar produtos novos ao receber mercadoria inédita
+        ✅ Aprovar descontos e pedidos de compra pendentes
+        🔍 Revisar alertas de estoque crítico no dashboard
+        📊 Acompanhar OPs atrasadas e pendências do dia
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 12 — SISTEMA DE ALERTAS COMPLETO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CICLO: DETECTAR → REGISTRAR (banco) → NOTIFICAR (WebSocket) → RESOLVER.
+  Anti-duplicata: nunca criar notificação se já existe não lida do mesmo tipo+produto.
+
+  🔴 CRÍTICO:
+    ESTOQUE_ZERO: estoque_disponivel <= 0 → bloquear venda + notificar admin + vendedor
+    OP_SEM_MATERIAL: ao abrir OP sem estoque → HTTP 409 + detalhes
+    FERRAMENTA_PERDIDA: funcionário reporta perda → bloquear + notificar admin
+    LOGIN_BLOQUEADO: 5 tentativas falhas em 10min → bloquear IP 15min
+    VENDA_CANCELADA: qualquer cancelamento → notificar todos os setores afetados
+
+  🟠 ATENÇÃO:
+    ESTOQUE_CRITICO: estoque_disponivel <= estoque_minimo (cron 5min)
+    CONTA_VENCENDO: vencimento <= HOJE + 3 dias (cron diário 08:00)
+    OP_ATRASADA: prazo_entrega < NOW() e status não CONCLUIDA (cron diário 07:00)
+    FERRAMENTA_EM_CAMPO_LONGA: EM_USO há > 30 dias
+    DESCONTO_AGUARDANDO: PENDENTE há > 5min → notificação com botões inline [Aprovar][Recusar]
+    ORCAMENTO_EXPIRANDO: valido_ate <= HOJE + 1 dia
+    DIVERGENCIA_RECEBIMENTO: quantidade_recebida < quantidade_pedida ao confirmar PC
+
+  🔵 INFORMAÇÃO:
+    OP_CONCLUIDA | VENDA_CONFIRMADA (acima de R$ configurável)
+    ANIVERSARIO_CLIENTE (cron 08:00) | NOVO_PEDIDO_COMPRA
+    CLIENTE_SEM_COMPRA (VIP há > 30 dias, cron segunda 09:00)
+    BACKUP_NAO_REALIZADO (> 7 dias) | PRODUTO_NAO_CADASTRADO (detectado no XML)
+
+  🟢 SUCESSO:
+    META_ATINGIDA | ESTOQUE_REABASTECIDO
+
+  FRONTEND — NotificacoesSino.tsx:
+    Badge vermelho no topbar com contagem não lidas.
+    Radix Popover com lista de notificações.
+    Cada item: ícone por tipo + título + "há X min" (date-fns formatDistanceToNow ptBR).
+    Botões inline quando aplicável (aprovar desconto, ver OP).
+    socket.on('nova_notificacao'): useNotificacoesStore.addNotificacao(n) + toast.
+    socket.on('novo_aviso_chefe'): se URGENTE → abrir AvisoModal via uiStore.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 13 — SYSTEM PROMPT GEMINI + FEATURES ADICIONAIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SYSTEM PROMPT GEMINI (injetado em toda requisição POST /ia/chat):
+
+  Você é o Agente Operacional VIDRATO — assistente da Distribuidora e Fábrica
+  de Esquadrias de Alumínio VIDRATO. Integrado ao ERP, com acesso em tempo real.
+
+  REGRAS ABSOLUTAS:
+  1. Responda SEMPRE em português do Brasil, objetivo e direto.
+  2. Emojis funcionais: ✅ confirmação | ⚠️ alerta | 🔴 crítico | 📊 dados | 🔒 bloqueio
+  3. NUNCA revele preco_custo ou dados financeiros sem perm_financeiro_ver.
+     Se sem permissão: "🔒 Você não tem permissão para ver essa informação."
+  4. Para ações destrutivas: pedir confirmação explícita antes.
+  5. Proativo: se dados injetados tiverem algo crítico, mencionar sem ser perguntado.
+  6. Se dado não está no contexto: "Não tenho esse dado agora."
+
+  DADOS ATUAIS DA EMPRESA (injetados antes de cada requisição): [CONTEXTO_EMPRESA_JSON]
+
+  AÇÕES EXECUTÁVEIS (retornar JSON antes do texto de confirmação):
+    Cadastrar produto:  {"acao":"cadastrar_produto","dados":{...}}
+    Editar produto:     {"acao":"editar_produto","id":N,"dados":{campo:valor}}
+    Criar OP:           {"acao":"criar_op","dados":{tipo,largura_cm,altura_cm,itens:[...]}}
+    Criar PC:           {"acao":"criar_pedido_compra","dados":{fornecedor_id,itens:[...]}}
+
+  PERSONALIDADE: Direto como gerente de chão de fábrica. Sem rodeios. Sem markdown complexo.
+
+  ─── FEATURES ADICIONAIS OBRIGATÓRIAS ────────────────────────────────────────
+
+  VENDA FRACIONADA POR METRO LINEAR:
+    Produto com unidade ML ou M: campo quantidade aceita decimais no PDV.
+    Preço calculado: quantidade * preco_por_metro. Exibir cálculo ao usuário.
+
+  TABELAS DE PREÇO POR CLIENTE:
+    Ao selecionar cliente no PDV: buscar tabela_preco_id e aplicar preços automaticamente.
+    Vendedor não precisa fazer nada — preço muda sozinho na tabela.
+
+  BUSCA GLOBAL (BuscaGlobal.tsx):
+    Ctrl+K / Cmd+K abre modal (useEffect no document.addEventListener).
+    Debounce 300ms, useQuery enabled: !!query.
+    Navegação por teclado (↑↓ Enter). useNavigate ao selecionar.
+
+  METAS E RANKING:
+    Tela "Minha Performance" integrada em Funcionarios.tsx.
+    Meta do mês (admin configura por funcionário), valor vendido, % da meta.
+    Barra de progresso animada (Framer Motion layoutId).
+
+  APROVAÇÃO DESCONTO EM TEMPO REAL:
+    socket.on('desconto_aguardando'): modal flutuante para admin (Radix Toast customizado).
+    Timeout 5min: se não responder, aplicar desconto máximo do perfil (cron job no backend).
+
+  AMOSTRAS:
+    Tipo especial de saída. Tab no PDV. Campos: produto, qtd, cliente, responsável, follow-up.
+    Dashboard: amostras sem follow-up há > X dias (useQuery com filtro).
+
+  GARANTIAS:
+    Geradas automaticamente ao confirmar venda (backend). Tab em Financeiro.tsx.
+    Relatório de garantias próximas do vencimento.
+
+  PORTAL DO CLIENTE (PortalCliente.tsx — rota pública):
+    /cliente/:token — sem autenticação.
+    Buscar dados via GET /portal/:token (backend gera token único por cliente).
+    Exibir: pedidos em andamento com status, NFs para download, status da OP.
+
+  SERVICE WORKER (sw.ts via Vite PWA plugin):
+    Cache First para assets estáticos.
+    Banner "Modo Offline" (useOnlineStatus hook).
+    PDV offline: IndexedDB para fila de vendas. Sync ao reconectar.
+
+  SCANNER QR CODE (em Producao.tsx e Vendas.tsx mobile):
+    <input type="file" capture="environment"> lê imagem → jsQR para decode.
+    Ou getUserMedia para vídeo contínuo. Resultado preenche campo de busca.
+
+  RELATÓRIO EXECUTIVO:
+    @react-pdf/renderer com layout A4.
+    KPIs semana anterior, top produtos, faturamento, alertas, previsão.
+    Download via blob URL.
+
+  PREVISÃO DE DEMANDA:
+    Recharts AreaChart com linha histórica + linha de projeção pontilhada.
+    Dados de GET /relatorios/previsao-demanda.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 14 — SEED DE DEMONSTRAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Arquivo: backend/src/demo/seed.js — executar quando DEMO_MODE=true.
+
+  EMPRESA: Distribuidora de Alumínio VIDRATO Ltda, CNPJ: 12.345.678/0001-99
+
+  FUNCIONÁRIOS (7):
+    admin@vidrato.demo / demo123      → ADMIN
+    vendedor@vidrato.demo / demo123   → VENDEDOR
+    almoxarife@vidrato.demo / demo123 → ALMOXARIFE
+    operador@vidrato.demo / demo123   → OPERADOR_FABRICA
+    expedidor@vidrato.demo / demo123  → EXPEDIDOR
+    financeiro@vidrato.demo / demo123 → FINANCEIRO
+    vendedor2@vidrato.demo / demo123  → VENDEDOR (para ranking de metas)
+
+  PRODUTOS (25 — com preços realistas de distribuidora de alumínio):
+    Perfil Suprema 30x45mm   | R$19c  | R$32v  | 148 | mín 30
+    Perfil Gold 30x60mm      | R$28c  | R$45v  | 94  | mín 20
+    Tubo Ret. 50x30mm        | R$19c  | R$32v  | 210 | mín 40
+    Lambri Branco Liso (pct) | R$52c  | R$89v  | 6   | mín 20 ← CRÍTICO
+    Borracha EPDM P (metro)  | R$2,80c| R$4,50v| 180 | mín 50
+    Borracha EPDM G (metro)  | R$3,90c| R$6v   | 95  | mín 30
+    Kit Roldana Simples      | R$16c  | R$28v  | 45  | mín 15
+    Fechadura Cremona        | R$38c  | R$65v  | 22  | mín 10
+    Dobradiça 3" (par)       | R$10c  | R$18v  | 88  | mín 20
+    Parafuso 5/16 cx100      | R$19c  | R$35v  | 12  | mín 5
+    Silicone Branco 280ml    | R$12c  | R$22v  | 0   | mín 8  ← ZERADO
+    Chapa Lisa 1.20x3.00m    | R$190c | R$320v | 8   | mín 3
+    Veneziana 0.90x1.20m     | R$110c | R$185v | 5   | mín 2
+    Perfil Baguete 10mm (ml) | R$4,80c| R$8v   | 340 | mín 80
+    Soleira Alum. 100mm (ml) | R$9c   | R$15v  | 120 | mín 30
+    Vidro 6mm Incolor (m²)   | R$45c  | R$80v  | 15  | mín 5
+    Fita Espuma 9x6mm (m)    | R$0,80c| R$1,50v| 500 | mín 100
+    Kit Instalação Janela     | R$35c  | R$65v  | 18  | mín 5
+    Mola Aérea Hidráulica    | R$65c  | R$120v | 8   | mín 3
+    Perfil "T" 25mm (ml)     | R$3,50c| R$6v   | 200 | mín 50
+    Parafuso Zincado M6 (cx) | R$8c   | R$15v  | 25  | mín 10
+    Massa Epóxi Bicomponente | R$22c  | R$40v  | 12  | mín 4
+    Rebite Pop 4.8mm (cx100) | R$7c   | R$13v  | 30  | mín 10
+    Espelho Fumê 4mm (m²)    | R$55c  | R$95v  | 10  | mín 3
+    Selante PU Preto 600ml   | R$18c  | R$35v  | 0   | mín 5  ← ZERADO
+
+  CLIENTES (8): 3 PJ (construtoras, atacadistas), 5 PF (instaladores, varejo)
+  FORNECEDORES (5): Suprema Alumínios | Gold Perfis | Vidros Brasil | Acessórios Total | Quimex
+  OPs (5): ABERTA | EM_PRODUCAO | AGUARDANDO_MATERIAL | CONCLUIDA | CANCELADA
+  FERRAMENTAS (8): algumas EM_USO, uma PERDIDA, uma em MANUTENCAO
+  ORÇAMENTOS (5): RASCUNHO | ENVIADO | APROVADO | REJEITADO | EXPIRADO
+  DEVOLUÇÕES (2): uma aprovada com crédito, uma pendente
+  VENDAS: 60 nos últimos 30 dias (para gráficos)
+  NF-e: 3 emitidas
+  CAIXA: aberto com movimentações do dia
+  AVISO: 1 URGENTE do chefe para testar modal bloqueante
+  Histórico de movimentações condizente com vendas e OPs
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 15 — SEQUÊNCIA OBRIGATÓRIA DE CONSTRUÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Entregue cada arquivo COMPLETO antes de passar para o próximo.
+
+  FASE 1 — INFRAESTRUTURA BACKEND
+    1.  backend/package.json | backend/.env.example | backend/.gitignore
+    2.  backend/drizzle/schema.js — TODAS as tabelas do BLOCO 05
+    3.  backend/drizzle.config.js
+    4.  backend/src/lib/db.js — Pool MySQL + instância Drizzle + testarConexao()
+    5.  backend/src/lib/cache.js — Redis com fallback automático para Map() em memória
+    6.  backend/src/lib/socket.js — Instância Socket.io exportada
+    7.  backend/src/lib/env.js — Validação .env com Zod ao iniciar
+    8.  backend/src/middleware/auth.js
+    9.  backend/src/middleware/rbac.js
+    10. backend/src/middleware/audit.js
+    11. backend/src/middleware/rateLimiter.js
+    12. backend/src/middleware/errorHandler.js
+    13. backend/src/middleware/performance.js
+    14. backend/src/middleware/installGuard.js
+    15. backend/src/app.js — Bootstrap Express + CORS + todos middlewares + rotas
+    16. backend/src/server.js — Ponto de entrada com detecção de modo
+
+  FASE 2 — WIZARD DE INSTALAÇÃO
+    17. install/index.html — Wizard 4 etapas, HTML puro, design do sistema
+    18. install/install.css | install/install.js
+    19. backend/src/modules/install/install.routes.js
+
+  FASE 3 — BACKEND MÓDULO A MÓDULO
+    20. auth/ (login, logout, refresh, troca de senha, bloqueio 5 tentativas)
+    21. avisos/ (CRUD, registrar leitura com IP, reenviar, WebSocket)
+    22. funcionarios/ (CRUD, perfis, permissões granulares)
+    23. produtos/ (CRUD, historico_precos, saldo disponível, serializer de custo)
+    24. clientes/ (CRUD, ViaCEP referência, histórico, créditos)
+    25. fornecedores/
+    26. orcamentos/ (CRUD, conversão venda, conversão OP, PDF)
+    27. vendas/ (todas as validações, cancelamento com senha, comissão, garantia)
+    28. devolucoes/ (fluxo completo, crédito_cliente, movimentação)
+    29. nfe/ (XML NF-e 4.00, DANFE, homologação)
+    30. producao/ (OPs, etapas, refugo, cortes, retalhos, foto, QR Code)
+    31. almoxarifado/ (entradas, XML parser, ferramentas, separações, mapa, fila avaria)
+    32. financeiro/ (caixa, DRE, contas, comissões, garantias, pendencias-dia)
+    33. relatorios/ (todos endpoints + previsão demanda + executivo)
+    34. alertas/ + backend/src/jobs/estoqueMonitor.js (node-cron 5min)
+    35. auditoria/
+    36. configuracoes/ (settings + health check GET /dev/health)
+    37. ia/ (contexto + proxy Gemini + execução de ações)
+    38. backend/src/services/ (alertasService, whatsappService, xmlNfeService, previsaoDemandaService)
+    39. busca global: GET /api/v1/busca
+
+  FASE 4 — CONFIGURAÇÃO FRONTEND
+    40. frontend/package.json | tsconfig.json | tsconfig.node.json
+    41. frontend/vite.config.ts | tailwind.config.ts | postcss.config.js
+    42. frontend/index.html
+    43. frontend/src/styles/globals.css — CSS variables + Tailwind directives + @import fonts
+    44. frontend/src/styles/animations.css — keyframes customizados
+
+  FASE 5 — FRONTEND: TIPOS E BIBLIOTECA BASE
+    45. frontend/src/types/api.ts — TODOS os tipos de resposta da API (sem `any`)
+    46. frontend/src/types/auth.ts | produtos.ts | vendas.ts | producao.ts | etc.
+    47. frontend/src/lib/api.ts — axios instance + interceptors JWT + refresh
+    48. frontend/src/lib/socket.ts — socket.io-client instance
+    49. frontend/src/lib/queryClient.ts — TanStack Query config
+    50. frontend/src/lib/utils.ts — formatBRL, formatDate, cn(), formatDistancePtBR
+    51. frontend/src/store/authStore.ts — Zustand persist sessionStorage
+    52. frontend/src/store/notificacoesStore.ts
+    53. frontend/src/store/uiStore.ts — sidebar, modais globais
+    54. frontend/src/hooks/usePermissao.ts
+    55. frontend/src/hooks/useSocket.ts — conectar WS + ouvir eventos globais
+    56. frontend/src/hooks/useNotificacoes.ts
+    57. frontend/src/hooks/useCep.ts — ViaCEP integration
+    58. frontend/src/hooks/useDebounce.ts
+    59. frontend/src/hooks/queries/ — um arquivo por domínio (useProdutos, useVendas, etc.)
+
+  FASE 6 — FRONTEND: COMPONENTES UI BASE
+    60. frontend/src/components/ui/Button.tsx
+    61. frontend/src/components/ui/Card.tsx
+    62. frontend/src/components/ui/Input.tsx
+    63. frontend/src/components/ui/Select.tsx (Radix)
+    64. frontend/src/components/ui/Modal.tsx (Radix Dialog + Framer Motion)
+    65. frontend/src/components/ui/Badge.tsx
+    66. frontend/src/components/ui/Table.tsx (TanStack Table wrapper)
+    67. frontend/src/components/ui/Skeleton.tsx
+    68. frontend/src/components/ui/Spinner.tsx
+    69. frontend/src/components/ui/EmptyState.tsx
+    70. frontend/src/components/charts/KpiCard.tsx
+    71. frontend/src/components/charts/BarChart.tsx (Recharts animado)
+    72. frontend/src/components/charts/LineChart.tsx (Recharts Area)
+    73. frontend/src/components/EstoqueIndicador.tsx — semáforo 🟢🟡🔴
+    74. frontend/src/components/WhatsAppButton.tsx
+
+  FASE 7 — FRONTEND: LAYOUT E COMPONENTES GLOBAIS
+    75. frontend/src/components/layout/Sidebar.tsx — menu dinâmico por permissões
+    76. frontend/src/components/layout/Topbar.tsx — sino + busca + user menu + banner demo
+    77. frontend/src/components/layout/DemoBanner.tsx
+    78. frontend/src/components/layout/AppLayout.tsx
+    79. frontend/src/components/NotificacoesSino.tsx — Radix Popover + WebSocket
+    80. frontend/src/components/BuscaGlobal.tsx — Ctrl+K + Radix Dialog
+    81. frontend/src/components/AvisoModal.tsx — bloqueante URGENTE z-index:9999
+    82. frontend/src/components/BemVindoModal.tsx — pop-up primeiro login + pendências
+    83. frontend/src/components/ChatIA.tsx — flutuante Framer Motion + Gemini
+
+  FASE 8 — FRONTEND: ROUTER E PÁGINAS
+    84. frontend/src/router/ProtectedRoute.tsx
+    85. frontend/src/router/PublicRoute.tsx
+    86. frontend/src/router/index.tsx — todas as rotas com lazy loading
+    87. frontend/src/App.tsx — Providers + interceptor de avisos + WebSocket global
+    88. frontend/src/main.tsx
+
+    PÁGINAS (uma por uma, completas):
+    89. frontend/src/pages/Login.tsx
+    90. frontend/src/pages/Dashboard.tsx
+    91. frontend/src/pages/Vendas.tsx (PDV)
+    92. frontend/src/pages/Orcamentos.tsx
+    93. frontend/src/pages/Devolucoes.tsx
+    94. frontend/src/pages/NFe.tsx
+    95. frontend/src/pages/Producao.tsx (mobile-first)
+    96. frontend/src/pages/Almoxarifado.tsx (mapa CSS Grid + fila avaria)
+    97. frontend/src/pages/Clientes.tsx (ViaCEP)
+    98. frontend/src/pages/Fornecedores.tsx
+    99. frontend/src/pages/Financeiro.tsx
+    100. frontend/src/pages/Relatorios.tsx
+    101. frontend/src/pages/Funcionarios.tsx
+    102. frontend/src/pages/Configuracoes.tsx (avisos do chefe)
+    103. frontend/src/pages/Auditoria.tsx
+    104. frontend/src/pages/SaudeDoSistema.tsx
+    105. frontend/src/pages/PortalCliente.tsx (rota pública)
+    106. frontend/src/pages/NotFound.tsx
+
+  FASE 9 — SEED, SERVICE WORKER E README
+    107. frontend/public/sw.ts — Vite PWA ou sw manual
+    108. backend/src/demo/seed.js — dados completos do BLOCO 14
+    109. backend/src/demo/clear.js
+    110. README.md — instalação local (backend + frontend), produção, PM2, Nginx, Vite build
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BLOCO 16 — CHECKLIST FINAL DE ENTREGA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  BACKEND:
+  [ ] Drizzle migrate executado sem erros, todas as tabelas do BLOCO 05 criadas
+  [ ] Seed carregado: 25 produtos (2 zerados), 7 funcionários, OPs, vendas, aviso URGENTE
+  [ ] Login retorna JWT com permissoes calculadas (base + extras - removidas)
+  [ ] GET /produtos omite preco_custo para tokens sem perm_produto_ver_custo
+  [ ] POST /vendas bloqueia com 409 se saldo insuficiente
+  [ ] POST /producao/ops reserva estoque (RESERVA_OP) ao criar OP
+  [ ] PUT /vendas/:id/cancelar exige senha admin com bcrypt + reverte estoque
+  [ ] Trava de ferramenta bloqueia no backend (não apenas frontend)
+  [ ] historico_precos inserido automaticamente ao editar produto
+  [ ] node-cron rodando: alertas a cada 5 min + diários + semanais
+  [ ] Anti-duplicata de alertas funcionando
+  [ ] WebSocket emite: nova OP, estoque crítico, novo aviso, desconto aguardando
+  [ ] Rate limiter bloqueia após 5 tentativas de login
+  [ ] logs_auditoria e logs_seguranca registrando todos os eventos
+  [ ] GET /avisos/pendentes retorna apenas não lidos
+  [ ] POST /avisos/:id/registrar-leitura grava timestamp, IP e via
+  [ ] Aviso URGENTE emitido via WebSocket para destinatários online
+  [ ] GET /financeiro/pendencias-dia retorna todos os tipos de pendência (Redis 5min)
+  [ ] GET /dev/health retorna JSON completo com todos os indicadores
+  [ ] /install funciona apenas com SETUP_COMPLETED=false e DEMO_MODE=false
+  [ ] Wizard cria tabelas, Admin e grava SETUP_COMPLETED=true
+  [ ] CORS configurado para http://localhost:5173 (dev) + FRONTEND_URL (prod)
+
+  FRONTEND TYPESCRIPT:
+  [ ] `tsc --noEmit` sem erros — strict mode ligado
+  [ ] Zero `any` — todos os tipos explícitos
+  [ ] axios interceptor anexa token e tenta refresh em 401
+  [ ] authStore persiste em sessionStorage, hydrata corretamente
+  [ ] usePermissao/useAnyPermissao usados para esconder UI sem permissão
+  [ ] Sidebar dinâmica — cada perfil vê apenas seus módulos
+  [ ] AvisoModal: z-index 9999, sem Escape, sem X, só "Li e Entendi" (POST leitura)
+  [ ] BemVindoModal: responsabilidades por setor + pendências admin + avisos normais
+  [ ] PDV (Vendas.tsx): TanStack Table, semáforo estoque, tabela de preços automática
+  [ ] Busca global Ctrl+K com navegação por teclado
+  [ ] Recharts BarChart com isAnimationActive={true}
+  [ ] ChatIA.tsx: Framer Motion, histórico, chips, typing indicator
+  [ ] Almoxarifado: mapa CSS Grid colorido por status + fila de avaria
+  [ ] Clientes.tsx: useCep hook preenche campos automaticamente
+  [ ] SaudeDoSistema.tsx: auto-refresh 30s, Framer Motion por status
+  [ ] Producao.tsx: botões min-h-[60px] mobile-first, foto com capture="environment"
+  [ ] Banner DEMO_MODE laranja visível quando demo_mode=true do login response
+  [ ] PortalCliente.tsx: rota pública /cliente/:token sem autenticação
+  [ ] Service Worker: Cache First + modo offline + IndexedDB queue PDV
+
+  SEGURANÇA:
+  [ ] preco_custo NUNCA em responses para perfis sem permissão (backend serializer)
+  [ ] NUNCA cruzar empresa_id entre usuários
+  [ ] Senhas sempre bcrypt (nunca texto puro)
+  [ ] JWT_SECRET do .env (nunca hardcoded)
+  [ ] Uploads validados (tipo + tamanho)
+  [ ] Drizzle usa queries parametrizadas (SQL injection impossível)
+  [ ] Transições de status de material inválidas bloqueadas no backend (400)
+
+  ─── OBSERVAÇÕES FINAIS ────────────────────────────────────────────────────────
+
+  BANCO: MySQL 8+ com Drizzle ORM (não PostgreSQL, não Prisma)
+  FRONTEND: React 18 + TypeScript 5 strict + Vite 5 + Tailwind CSS 3
+  CEP: ViaCEP gratuita, sem chave, obrigatória no formulário de clientes
+  NF-e: homologação SEFAZ por padrão, nunca produção sem config explícita
+  IMPRESSÃO: window.print() com @media print — sem integração TCP/IP por IP
+  DESIGN: visualmente idêntico ao vidrato.html aprovado pelo cliente
+          (paleta, tipografia, layout do dashboard, comportamento dos componentes)
+  WIZARD /install: HTML puro standalone (sem React, sem Vite) para rodar antes
+                   do frontend estar construído
