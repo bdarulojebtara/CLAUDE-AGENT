@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VIDRATO — Sistema Integrado de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Paleta Verde Claro - Suave, legível e moderna */
+  --verde:       #4ade80; 
+  --verde-dark:  #22c55e;
+  --verde-deep:  #14532d;
+  --verde-glow:  rgba(74, 222, 128, 0.2);
+  --verde-faint: rgba(74, 222, 128, 0.08);
+  
+  /* Textos neutros para máxima legibilidade */
+  --branco:      #ffffff;
+  --off-white:   #f8fafc;
+  --text-mid:    #e2e8f0; 
+  --text-dim:    #94a3b8; 
+  
+  /* Fundos escuros ajustados para um tom sofisticado */
+  --cinza-1:     #0b1114; 
+  --cinza-2:     #121b1e; 
+  --cinza-3:     #192529; 
+  --cinza-4:     #213035;
+  
+  --border:      rgba(74, 222, 128, 0.2);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; } /* Bloqueia scroll duplo na raiz */
+body {
+  font-family:'DM Sans', sans-serif;
+  background:var(--cinza-1);
+  color:var(--branco);
+  -webkit-font-smoothing: antialiased; 
+}
+
+/* ────────── UTILITÁRIOS GERAIS ────────── */
+.pulse-dot {
+  width:14px; height:14px; border-radius:50%; background:var(--verde);
+  box-shadow:0 0 16px var(--verde); animation:blink 1.8s ease infinite;
+}
+@keyframes blink { 0%, 100% { opacity:1; } 50% { opacity:.4; } }
+
+/* ────────── LAYOUT GERAL DO APP ────────── */
+/* Agora o app inicia visível por padrão */
+#app { height:100%; display:flex; flex-direction:column; position: relative; }
+
+/* ────────── BARRA SUPERIOR GLOBAL ────────── */
+#global-topbar {
+  position:fixed; top:0; left:0; right:0; z-index:2000;
+  height:65px;
+  background:rgba(11, 17, 20, 0.96);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 1.5rem; gap:1rem;
+}
+.gtb-logo { font-family:'Syne', sans-serif; font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+.gtb-logo span { color:var(--verde); }
+
+/* Controles Mobile (Slides) - Oculto por padrão */
+.gtb-center-slides { display:flex; align-items:center; gap:.5rem; flex:1; justify-content:center; }
+.gtb-btn {
+  height:38px; border:none; cursor:pointer; border-radius: 6px;
+  display:flex; align-items:center; justify-content:center; gap:.4rem;
+  font-size:.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+  transition:all .25s; background:var(--cinza-2); color:var(--text-mid);
+  padding:0 1rem; font-family:'DM Sans', sans-serif; white-space:nowrap;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.gtb-btn:hover:not(:disabled) { background:var(--cinza-3); color:var(--branco); border-color: var(--border); }
+.gtb-btn:disabled { opacity:.3; cursor:default; }
+.gtb-btn.primary { background:var(--verde); color:var(--cinza-1); border:none; box-shadow: 0 0 15px var(--verde-glow); }
+.gtb-btn.primary:hover:not(:disabled) { background:var(--verde-dark); transform: scale(1.05); }
+
+.gtb-counter { font-family:'DM Mono', monospace; font-size:.8rem; color:var(--text-mid); padding:0 .5rem; white-space:nowrap; font-weight: 600;}
+.gtb-prog-wrap { flex:1; max-width:180px; height:4px; background:var(--cinza-3); border-radius:2px; overflow:hidden; display: none; }
+@media(min-width: 600px) { .gtb-prog-wrap { display: block; } }
+.gtb-prog-bar { height:100%; background:var(--verde); border-radius:2px; transition:width .4s ease; box-shadow:0 0 8px var(--verde-glow); }
+
+/* Links Desktop - Visível por padrão */
+.gtb-center-nav { display:flex; gap:1.8rem; justify-content: center; flex:1; }
+.gtb-center-nav a { font-size:.75rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); text-decoration:none; transition:color .2s; }
+.gtb-center-nav a:hover { color:var(--verde); }
+@media(max-width: 850px) { .gtb-center-nav { display:none !important; } } 
+
+/* Botões Direita */
+.gtb-right { display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+.gtb-sep { width:1px; height:24px; background:var(--border); flex-shrink:0; margin: 0 0.5rem;}
+@media(max-width: 480px) { .gtb-mode-label { display:none; } .gtb-btn { padding: 0 0.8rem; letter-spacing: 0px; } }
+
+/* ────────── MODO SLIDES (MOBILE) ────────── */
+#mode-slides {
+  display:none; flex:1; overflow:hidden; position:relative; flex-direction:column;
+  padding-top: 65px; /* Compensa o topbar fixo */
+}
+#mode-slides.active { display:flex; }
+.slide-viewport { flex:1; overflow:hidden; position:relative; background: var(--cinza-1); }
+.slide-content { position:absolute; inset:0; overflow-y:auto; padding:2rem 1.5rem 6rem; scroll-behavior: smooth;}
+.slide-content::-webkit-scrollbar { width:4px; }
+.slide-content::-webkit-scrollbar-thumb { background:rgba(74,222,128,0.3); border-radius:4px;}
+
+.slide-panel { width:100%; min-height:100%; display:none; animation:slideIn .4s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-panel.active { display:block; }
+@keyframes slideIn { from { opacity:0; transform:translateY(15px) } to { opacity:1; transform:none } }
+
+/* Estilização interna dos Slides */
+.sl-tag { font-size:.7rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:var(--verde); margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+.sl-tag::before { content:''; display:block; width:20px; height:2px; background:var(--verde); }
+.sl-title { font-family:'Syne', sans-serif; font-size:2rem; font-weight:800; line-height:1.1; margin-bottom:1rem; color: var(--branco); }
+.sl-desc { color:var(--text-mid); font-size:1rem; line-height:1.7; margin-bottom:2rem; }
+
+.sl-card { background:var(--cinza-2); padding:1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 1rem; }
+.sl-card-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--branco); margin-bottom: 0.5rem; }
+.sl-card-text { color: var(--text-mid); font-size: 0.95rem; line-height: 1.6; }
+
+/* ────────── MODO COMPUTADOR (SCROLL NORMAL) - Visível por padrão ────────── */
+#mode-normal {
+  display:block; flex:1; overflow-y:auto; overflow-x:hidden; scroll-behavior:smooth;
+  padding-top: 65px; /* Compensa o topbar fixo */
+}
+#mode-normal::-webkit-scrollbar { width:8px; }
+#mode-normal::-webkit-scrollbar-track { background:var(--cinza-1); }
+#mode-normal::-webkit-scrollbar-thumb { background:rgba(74,222,128,0.3); border-radius:4px; }
+#mode-normal::-webkit-scrollbar-thumb:hover { background:var(--verde); }
+
+.hero { min-height:calc(100vh - 65px); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:4rem 2rem; text-align:center; }
+.hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 70% 55% at 50% 40%, var(--verde-faint) 0%, transparent 65%),radial-gradient(ellipse 40% 30% at 20% 80%, rgba(74, 222, 128, 0.04) 0%, transparent 60%),linear-gradient(170deg, var(--cinza-1) 0%, #0d1418 60%, var(--cinza-2) 100%);}
+.hex-grid{position:absolute;inset:0;z-index:0;opacity:.25;background-image:linear-gradient(var(--border) 1px, transparent 1px),linear-gradient(90deg, var(--border) 1px, transparent 1px);background-size:50px 50px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.6rem;border:1px solid var(--verde);color:var(--verde);background: var(--verde-faint);font-size:.7rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:.5rem 1.2rem;border-radius:30px; margin-bottom:2rem;position:relative;z-index:1;animation:fd .7s ease both;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,9vw,6.5rem); font-weight:800;line-height:1.05; letter-spacing:-1px;position:relative;z-index:1;animation:fd .7s .12s ease both;margin-bottom: 1rem;}
+.hero h1 .green{color:var(--verde);}
+.hero h1 .thin{font-weight:400;color:var(--text-mid); font-size: 0.85em;}
+.hero-sub{font-size:clamp(1.05rem, 2vw, 1.3rem); color:var(--text-mid);max-width:760px; margin:1.5rem auto 3rem;font-weight:400;line-height:1.75;position:relative;z-index:1;animation:fd .7s .24s ease both;}
+.hero-cta{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;animation:fd .7s .36s ease both;}
+.btn{font-family:'Syne',sans-serif;font-weight:800;font-size:.85rem;letter-spacing:2px;text-transform:uppercase;padding:1rem 2.5rem;border-radius:6px;cursor:pointer;text-decoration:none;transition:all .3s ease;border:none;display:inline-flex; align-items: center; justify-content: center;}
+.btn-g{background:var(--verde);color:var(--cinza-1);box-shadow:0 8px 30px var(--verde-glow);}
+.btn-g:hover{background:#86efac; box-shadow:0 12px 40px rgba(74,222,128,0.4);transform:translateY(-3px);}
+.btn-o{background:var(--cinza-2);color:var(--branco);border:1px solid rgba(255,255,255,0.2);}
+.btn-o:hover{border-color:var(--verde);color:var(--verde);transform:translateY(-3px); background:var(--cinza-3);}
+
+.hero-stats { display:flex; gap:4rem; justify-content:center; flex-wrap:wrap; margin-top:5rem; position:relative; z-index:1; background: var(--cinza-2); padding: 2rem 4rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+.stat { text-align:center; }
+.stat-num { font-family:'Syne', sans-serif; font-size:2.8rem; font-weight:800; color:var(--verde); line-height:1; }
+.stat-label { font-size:.7rem; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-top:.6rem; font-weight: 600; }
+
+.flow-strip { display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:4rem; position:relative; z-index:1; flex-wrap: wrap;}
+.flow-node { background:var(--cinza-2); border:1px solid rgba(255,255,255,0.1); padding:.8rem 1.5rem; font-size:.85rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:.6rem; border-radius: 6px; color: var(--text-mid); }
+.flow-arrow { color:var(--verde); font-size:1.5rem; font-weight: 800; }
+.flow-center { background:var(--verde-faint); border-color:var(--verde); color:var(--verde); box-shadow: 0 0 20px var(--verde-glow); }
+
+section { padding:7rem 2rem; }
+.container { max-width:1180px; margin:0 auto; }
+.alt-bg { background:var(--cinza-2); }
+.stag { font-size:.75rem; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:var(--verde); margin-bottom:1.2rem; display:flex; align-items:center; gap:.8rem; }
+.stag::before { content:''; display:block; width:30px; height:2px; background:var(--verde); }
+.sh { font-family:'Syne', sans-serif; font-size:clamp(2.4rem, 4.5vw, 3.8rem); font-weight:800; line-height:1.1; margin-bottom:1.5rem; }
+.sd { color:var(--text-mid); font-size:1.1rem; line-height:1.8; max-width:650px; }
+
+.dual-flow { display:grid; grid-template-columns:1fr auto 1fr; gap:1.5rem; margin-top:4rem; }
+.flow-col { background:var(--cinza-2); border:1px solid rgba(255,255,255,0.05); padding:2.5rem; border-radius: 8px; }
+.flow-col-center { background:var(--cinza-2); border:2px solid var(--verde); padding:2.5rem; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-radius: 8px; box-shadow: 0 10px 40px var(--verde-glow); }
+.flow-col-title { font-family:'Syne', sans-serif; font-size:1.2rem; font-weight:800; color:var(--branco); letter-spacing:1px; text-transform:uppercase; margin-bottom:1rem; }
+.flow-icon-big { font-size:2.8rem; margin-bottom:1rem; background: rgba(255,255,255,0.05); width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.flow-items { list-style:none; margin-top:1.5rem; }
+.flow-items li { color:var(--text-mid); font-size:1rem; padding:.6rem 0; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:.8rem; }
+.flow-items li::before { content:'✓'; color:var(--verde); font-size:.9rem; font-weight:bold; }
+.center-badge { background:var(--verde); color:var(--cinza-1); font-family:'Syne', sans-serif; font-weight:800; font-size:.85rem; letter-spacing:2px; text-transform:uppercase; padding:.6rem 1.2rem; margin-top:1.5rem; border-radius: 4px; }
+
+.prob-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:4rem; }
+.pb { background:var(--cinza-1); padding:2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); transition:all .3s ease; display: flex; flex-direction: column; }
+.pb:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.pb-icon { font-size:2.5rem; margin-bottom:1.2rem; }
+.pb-badge { display:inline-block; font-size:.7rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:.4rem 1rem; margin-bottom:1.2rem; border-radius: 4px; align-self: flex-start; }
+.bad-r { background:rgba(239, 68, 68, 0.15); color:#fca5a5; border:1px solid rgba(239, 68, 68, 0.4); }
+.bad-g { background:var(--verde-faint); color:var(--verde); border:1px solid var(--border); }
+.pb-title { font-family:'Syne', sans-serif; font-size:1.3rem; font-weight:800; margin-bottom:1rem; color: var(--branco); }
+.pb-text { color:var(--text-mid); font-size:1.05rem; line-height:1.7; }
+
+.mods-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:4rem; }
+.mod { background:var(--cinza-1); padding:2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-top:4px solid; transition:all .3s ease; }
+.mod:hover { background:var(--cinza-3); transform:translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.m-verde { border-top-color:var(--verde); } .m-teal { border-top-color:#2dd4bf; } .m-lime { border-top-color:#bef264; } .m-sage { border-top-color:#94a3b8; } .m-mint { border-top-color:#6ee7b7; } .m-em { border-top-color:#a7f3d0; }
+.mod-icon { font-size:2.5rem; margin-bottom:1.2rem; }
+.mod-title { font-family:'Syne', sans-serif; font-size:1.3rem; font-weight:800; margin-bottom:.5rem; color: var(--branco); }
+.mod-role { font-size:.75rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--verde); margin-bottom:1.2rem; }
+.mod-text { color:var(--text-mid); font-size:1rem; line-height:1.7; margin-bottom:1.5rem; }
+.mod-list { list-style:none; }
+.mod-list li { color:var(--text-mid); font-size:.95rem; padding:.4rem 0; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; align-items:flex-start; gap:.6rem; }
+.mod-list li::before { content:'✓'; color:var(--verde); font-size:.9rem; font-weight:800; margin-top:2px; }
+
+.timeline { margin-top:4rem; position:relative; }
+.timeline::before { content:''; position:absolute; left:34px; top:0; bottom:0; width:4px; border-radius: 2px; background:linear-gradient(to bottom, var(--verde), var(--verde-faint)); }
+.tl-item { display:flex; gap:3rem; margin-bottom:2.5rem; padding-left:90px; position:relative; }
+.tl-dot { position:absolute; left:0; top:0; width:72px; height:72px; background:var(--cinza-1); border:3px solid var(--verde); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Syne', sans-serif; font-size:1.1rem; font-weight:800; color:var(--verde); box-shadow: 0 0 20px var(--verde-glow); }
+.tl-box { background:var(--cinza-1); border:1px solid rgba(255,255,255,0.08); border-radius: 8px; padding:2rem 2.5rem; flex:1; transition: transform .3s; }
+.tl-box:hover { transform: translateX(10px); border-color: var(--border); }
+.tl-week { display:inline-block; background: var(--verde-faint); font-size:.7rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--verde); margin-bottom:1rem; padding: .4rem 1rem; border-radius: 4px; }
+.tl-title { font-family:'Syne', sans-serif; font-size:1.4rem; font-weight:800; margin-bottom:1rem; color: var(--branco); }
+.tl-tasks { list-style:none; }
+.tl-tasks li { color:var(--text-mid); font-size:1.05rem; padding:.4rem 0; display:flex; align-items:flex-start; gap:.6rem; line-height: 1.6; }
+.tl-tasks li::before { content:'✓'; color:var(--verde); font-weight:800; margin-top:4px; }
+
+/* Dashboard HTML Custom Bars */
+.dash { background:var(--cinza-1); border:1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top:4rem; overflow:hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+.dash-bar { background:var(--cinza-3); border-bottom:1px solid rgba(255,255,255,0.05); padding:1rem 1.5rem; display:flex; align-items:center; gap:1rem; }
+.dots { display:flex; gap:.5rem; } .dot { width:12px; height:12px; border-radius:50%; }
+.dash-name { color:var(--text-dim); font-size:.8rem; font-family:'DM Mono', monospace; }
+.dash-body { padding:2rem; }
+.kpi-row { display:grid; grid-template-columns:repeat(4, 1fr); gap:1.2rem; margin-bottom:1.5rem; }
+.kpi { background:var(--cinza-2); border:1px solid rgba(255,255,255,0.05); border-left:4px solid; border-radius: 6px; padding:1.5rem; }
+.kpi-l { font-size:.7rem; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:.5rem; font-weight: 700; }
+.kpi-v { font-family:'Syne', sans-serif; font-size:2rem; font-weight:800; line-height:1; }
+.kpi-c { font-size:.8rem; margin-top:.5rem; font-weight: 600; }
+.up { color:var(--verde); } .dn { color:#f87171; }
+.chart-row { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+.chart-box { background:var(--cinza-2); border:1px solid rgba(255,255,255,0.05); border-radius: 8px; padding:1.5rem; display: flex; flex-direction: column; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 100% 30px; }
+.chart-ttl { font-size:.7rem; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; margin-bottom:1.5rem; font-weight: 700; }
+.bars { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; height: 180px; width: 100%; margin-top: auto; border-bottom: 2px solid rgba(255,255,255,0.1); }
+.bw { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; height: 100%; }
+.b { width: 100%; max-width: 45px; border-radius: 4px 4px 0 0; height: 0%; transition: height 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 15px rgba(0,0,0,0.3); }
+.b-gold { background: linear-gradient(to top, #ca8a04, #fde047); } .b-blue { background: linear-gradient(to top, #0369a1, #38bdf8); } .b-green { background: linear-gradient(to top, var(--verde-deep), var(--verde)); } .b-orange { background: linear-gradient(to top, #c2410c, #fb923c); } .b-purple { background: linear-gradient(to top, #6d28d9, #a78bfa); } .b-red { background: linear-gradient(to top, #991b1b, #f87171); }
+.b-val { font-size: 0.8rem; color: var(--branco); font-weight: 800; margin-bottom: 6px; opacity: 0; transform: translateY(10px); }
+.b-val.show { opacity: 1; transform: translateY(0); transition: all 0.6s ease; }
+.bl { font-size: .65rem; color: var(--text-dim); text-align: center; line-height: 1.2; margin-top: 8px; height: 30px; display: flex; align-items: flex-start; justify-content: center; }
+.alert-list { display:flex; flex-direction:column; gap:.6rem; }
+.al { display:flex; align-items:center; gap:1rem; padding:.8rem 1rem; border-left:4px solid; border-radius: 0 4px 4px 0; background:var(--cinza-1); font-size:.9rem; color: var(--text-mid); }
+.al-r { border-left-color:#f87171; } .al-o { border-left-color:#fbbf24; } .al-g { border-left-color:var(--verde); } .al-b { border-left-color:#38bdf8; }
+
+/* IA Chat Literal */
+.ia-grid { display:grid; grid-template-columns:1fr 1.2fr; gap:4rem; margin-top:4rem; align-items:start; }
+.ia-chat { background:var(--cinza-1); border:1px solid rgba(255,255,255,0.08); border-radius: 12px; padding:2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4); max-height: 650px; overflow-y: auto; }
+.ia-chat::-webkit-scrollbar { width: 6px; } .ia-chat::-webkit-scrollbar-track { background: var(--cinza-1); } .ia-chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+.ia-chat-ttl { font-size:.75rem; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:1.5rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; position: sticky; top: -2rem; background: var(--cinza-1); z-index: 10; }
+.msg { margin-bottom:1.5rem; display:flex; flex-direction:column; }
+.msg-user { align-items:flex-end; } .msg-ai { align-items:flex-start; }
+.bubble { padding:1rem 1.2rem; border-radius:8px; font-size:1rem; line-height:1.6; max-width:95%; }
+.bubble-u { background:var(--verde-deep); color:var(--branco); border:1px solid var(--verde); border-bottom-right-radius: 2px; }
+.bubble-a { background:var(--cinza-3); color:var(--text-mid); border:1px solid rgba(255,255,255,0.1); border-bottom-left-radius: 2px; }
+.bubble-a strong { color:var(--verde); }
+.msg-name { font-size:.7rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:.4rem; }
+
+/* Tabelas e ROI */
+.highlight-box { margin-top: 3.5rem; background: var(--verde-faint); border: 2px solid var(--verde); border-radius: 12px; padding: 3rem; display: flex; align-items: center; gap: 3rem; flex-wrap: wrap; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 3rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); }
+.roi-t { width:100%; border-collapse:collapse; min-width: 800px; background: var(--cinza-1); }
+.roi-t th { background:var(--cinza-3); padding:1.2rem 1.5rem; text-align:left; font-size:.85rem; letter-spacing:2px; text-transform:uppercase; color:var(--verde); border-bottom: 2px solid var(--border);}
+.roi-t td { border-bottom:1px solid rgba(255,255,255,0.05); padding:1.2rem 1.5rem; font-size:1rem; color:var(--text-mid); vertical-align: middle; }
+.roi-t tr:hover td { background:rgba(255,255,255,0.03); }
+.rv { color:var(--verde); font-weight:800; font-family:'Syne', sans-serif; font-size:1.15rem; }
+
+.int-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.5rem; margin-top:4rem; }
+.int-card { background:var(--cinza-1); border:1px solid rgba(255,255,255,0.08); border-radius: 8px; padding:2.5rem 1.5rem; display:flex; flex-direction:column; align-items:center; text-align:center; gap:.8rem; transition:all .3s ease; }
+.int-card:hover { border-color:var(--verde); box-shadow:0 10px 30px var(--verde-glow); transform:translateY(-5px); background: var(--cinza-2); }
+.int-ic { font-size:3rem; margin-bottom: .5rem; }
+.int-nm { font-weight:800; font-size:1.2rem; color: var(--branco); }
+.int-ds { color:var(--text-mid); font-size:1rem; line-height:1.6; }
+
+.cta-sec { text-align:center; padding:8rem 2rem; background:var(--cinza-2); position:relative; overflow:hidden; }
+.cta-sec::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 50% at 50% 50%, var(--verde-faint) 0%, transparent 70%); }
+.cta-h { font-family:'Syne', sans-serif; font-size:clamp(2.5rem, 5.5vw, 4.5rem); font-weight:800; line-height:1.1; margin-bottom:1.5rem; position:relative; z-index:1; color: var(--branco); }
+.cta-h span { color:var(--verde); }
+.cta-d { color:var(--text-mid); font-size: 1.15rem; max-width:600px; margin:0 auto 3rem; line-height:1.8; position:relative; z-index:1; }
+.cta-grid { margin-top:4rem; display:grid; grid-template-columns:repeat(3, 1fr); gap:1.5rem; max-width:700px; margin-left:auto; margin-right:auto; position:relative; z-index:1; }
+
+footer { background:var(--cinza-1); border-top:1px solid rgba(255,255,255,0.05); padding:4rem 2rem; text-align:center; color:var(--text-dim); }
+
+.reveal { opacity:0; transform:translateY(30px); transition:opacity .7s cubic-bezier(0.22,1,0.36,1), transform .7s cubic-bezier(0.22,1,0.36,1); }
+.revealed { opacity:1; transform:none; }
+
+/* ────────── MEDIA QUERIES RESPONSIVIDADE ────────── */
+@media(max-width: 850px) {
+  .dual-flow { grid-template-columns: 1fr; gap: 1rem; }
+  .flow-col-center { border: 2px solid var(--verde); margin: 1rem 0; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .chart-row { grid-template-columns: 1fr; }
+}
+@media(max-width: 600px) {
+  .prob-grid { grid-template-columns: 1fr; }
+  .ia-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .kpi-row { grid-template-columns: 1fr; }
+  .cta-grid { grid-template-columns: 1fr; }
+  .highlight-box { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+  .hero-stats { padding: 2rem; gap: 2rem; flex-direction: column; }
+  .tl-item { gap: 1.5rem; padding-left: 65px; }
+  .tl-dot { width: 50px; height: 50px; font-size: .9rem; left: 0; }
+  .timeline::before { left: 23px; }
+  .bars { height: 140px; }
+  .b-val { font-size: 0.65rem; }
+  .bl { font-size: 0.55rem; line-height: 1.1; margin-top: 4px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     BARRA SUPERIOR GLOBAL (FIXA)
+══════════════════════════════════════ -->
+<div id="global-topbar" class="active">
+  <div class="gtb-logo">
+    <div class="pulse-dot"></div>
+    <span style="color:var(--branco)">VID</span><span>RATO</span>
+  </div>
+
+  <!-- Controles Mobile (Apenas visível no Modo Mobile) -->
+  <div class="gtb-center-slides" id="gtb-slide-controls" style="display:none;">
+    <button class="gtb-btn" id="gtb-prev" onclick="prevSlide()" title="Voltar">◀ Voltar</button>
+    <div class="gtb-prog-wrap"><div class="gtb-prog-bar" id="gtb-prog" style="width:10%"></div></div>
+    <span class="gtb-counter" id="gtb-counter">1 / 16</span>
+    <button class="gtb-btn primary" id="gtb-next" onclick="nextSlide()" title="Avançar">Avançar ▶</button>
+  </div>
+
+  <!-- Links Desktop (Apenas visível no Modo Desktop) -->
+  <div class="gtb-center-nav" id="gtb-nav-links">
+    <a href="#fluxo-n">A Operação</a>
+    <a href="#problema-n">Soluções</a>
+    <a href="#modulos-n">Módulos</a>
+    <a href="#dashboard-n">Dashboard UI</a>
+    <a href="#roi-n">Financeiro</a>
+    <a href="#ia-n">Agente IA</a>
+  </div>
+
+  <!-- Troca de Modos -->
+  <div class="gtb-right">
+    <div class="gtb-sep"></div>
+    <button class="gtb-btn" id="gtb-mode-switch-to-desktop" onclick="setMode('desktop')" title="Mudar para Visão Completa" style="display:none;">🖥️ <span class="gtb-mode-label">Ver Tudo</span></button>
+    <button class="gtb-btn" id="gtb-mode-switch-to-mobile" onclick="setMode('mobile')" title="Mudar para Slides">📱 <span class="gtb-mode-label">Modo Mobile</span></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP CONTAINER
+══════════════════════════════════════ -->
+<div id="app" class="active">
+
+  <!-- ════ MODO SLIDES (MOBILE) ════ -->
+  <div id="mode-slides">
+    <div class="slide-viewport">
+      <div class="slide-content" id="slide-content-wrap">
+
+        <!-- SLIDE 1 — HERO -->
+        <div class="slide-panel active" id="sl-1">
+          <div class="hero-eyebrow" style="margin-bottom: 1.5rem;"><div class="nav-dot"></div>Proposta Técnica · VIDRATO · 2026</div>
+          <h1 class="sl-h1" style="color: var(--branco);">Sistema Integrado<br><span style="color: var(--verde);">VIDRATO</span><br><span style="color: var(--text-mid); font-weight: 400; font-size: 0.8em;">Distribuição & Fábrica</span></h1>
+          <p class="sl-desc" style="margin-top: 1rem;">Um banco de dados central super simples que controla tudo: alumínio, acessórios e <strong>ferramentas manuais</strong> saindo para clientes ou para consumo interno. Sem conflitos, sem dor de cabeça e sem furos no estoque.</p>
+          
+          <div class="flow-strip" style="justify-content: flex-start; margin-top: 2rem;">
+            <div class="flow-node">🏭 Fornecedores</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node flow-center" style="font-size: 0.8rem;">⬡ ESTOQUE ÚNICO</div>
+            <div class="flow-arrow">→</div>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+               <div class="flow-node" style="border-color: #38bdf8; color: #38bdf8;">🛒 Loja</div>
+               <div class="flow-node" style="border-color: #fca5a5; color: #fca5a5;">⚙️ Fábrica</div>
+            </div>
+          </div>
+          <div class="hero-stats" style="margin-top: 2rem; padding: 1.5rem;">
+            <div><div class="stat-num" style="font-size: 2rem;">~4</div><div class="stat-label">Semanas (Part-time)</div></div>
+            <div><div class="stat-num" style="font-size: 2rem;">6</div><div class="stat-label">Módulos Completos</div></div>
+            <div><div class="stat-num" style="font-size: 2rem;">100%</div><div class="stat-label">Rastreabilidade</div></div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 — FLUXO DUPLO -->
+        <div class="slide-panel" id="sl-2">
+          <div class="sl-tag">Entendendo a Operação</div>
+          <h2 class="sl-title">Os 2 Caminhos de Saída</h2>
+          <p class="sl-desc">O mesmo alumínio e acessórios podem sair por dois caminhos diferentes. O novo sistema garante que nenhum setor consuma material do outro sem registro oficial.</p>
+          
+          <div class="sl-card" style="border-color: #38bdf8;">
+            <div class="sl-card-title" style="color: #38bdf8;">🛒 1. Saída para Vendas Externas</div>
+            <p class="sl-card-text">Venda direta no balcão para empresas e clientes finais. O sistema gera a nota, manda pro WhatsApp do cliente e a ordem já imprime fisicamente na expedição.</p>
+          </div>
+
+          <div class="sl-card" style="border-color: var(--verde); background: var(--verde-faint); box-shadow: 0 0 20px var(--verde-glow); text-align: center;">
+            <div class="sl-card-title" style="color: var(--verde); font-size: 1.5rem;">⬡ O CORAÇÃO: ESTOQUE ÚNICO</div>
+            <p class="sl-card-text">Controla saldos em tempo real para os dois lados simultaneamente. <br><br><strong>SALDO REAL = TOTAL - RESERVADO</strong></p>
+          </div>
+
+          <div class="sl-card" style="border-color: #fca5a5;">
+            <div class="sl-card-title" style="color: #fca5a5;">⚙️ 2. Saída para Fábrica Própria</div>
+            <p class="sl-card-text">Consumo interno de material para fabricar portas e portões. O funcionário abre uma Ordem de Produção (OP) no celular e o pedido sai na impressora da Produção.</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 — O PROBLEMA 1 -->
+        <div class="slide-panel" id="sl-3">
+          <div class="sl-tag">O Problema e a Solução</div>
+          <h2 class="sl-title">Distribuidora & Fábrica</h2>
+          <p class="sl-desc">Onde o dinheiro é perdido hoje vs. Como o sistema resolve na hora.</p>
+          
+          <div class="sl-card">
+            <div class="pb-badge bad-r">❌ ANTES (HOJE) — Distribuidora</div>
+            <div class="sl-card-title">Vender material que não existe mais</div>
+            <p class="sl-card-text">O vendedor fecha a venda de 20 barras achando que tem no estoque, mas a fábrica já tinha separado 15 daquelas barras para fazer um portão hoje de manhã. Resultado: stress com cliente e atrasos.</p>
+          </div>
+          <div class="sl-card" style="border-color: var(--verde); box-shadow: 0 0 15px rgba(74,222,128,0.1);">
+            <div class="pb-badge bad-g">✅ DEPOIS — Distribuidora</div>
+            <div class="sl-card-title">Saldo sempre real e bloqueio anti-furo</div>
+            <p class="sl-card-text">O sistema calcula o <strong>saldo real</strong> em tempo real (Estoque total no galpão menos o que a fábrica já reservou). Se não tiver saldo livre, o sistema bloqueia o clique de venda na hora. Fim do problema.</p>
+          </div>
+
+          <div class="sl-card">
+            <div class="pb-badge bad-r">❌ ANTES (HOJE) — Fábrica</div>
+            <div class="sl-card-title">Equipe parada por falta de peça</div>
+            <p class="sl-card-text">O funcionário vai montar uma porta de correr e descobre na hora H que as borrachas e roldanas sumiram (foram vendidas no balcão na pressa). A produção inteira é interrompida até comprarem mais.</p>
+          </div>
+          <div class="sl-card" style="border-color: var(--verde); box-shadow: 0 0 15px rgba(74,222,128,0.1);">
+            <div class="pb-badge bad-g">✅ DEPOIS — Fábrica</div>
+            <div class="sl-card-title">Reserva blindada no início do dia</div>
+            <p class="sl-card-text">Ao abrir a tela da Ordem de Produção (OP), as borrachas e roldanas são marked como "Reservadas". Elas somem da tela de vendas do balcão. O montador tem garantia 100% de que seu material o aguarda.</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 4 — O PROBLEMA 2 -->
+        <div class="slide-panel" id="sl-4">
+          <div class="sl-tag">O Problema e a Solução</div>
+          <h2 class="sl-title">Gestão & Ferramentas</h2>
+          <p class="sl-desc">Fechando o ralo invisível de dinheiro e controle.</p>
+          
+          <div class="sl-card">
+            <div class="pb-badge bad-r">❌ ANTES (HOJE) — Visão do Dono</div>
+            <div class="sl-card-title">Caixa-preta das perdas e sumiços</div>
+            <p class="sl-card-text">O dono sabe que está perdendo dinheiro com desperdício ou acessórios que "somem", mas as planilhas do Excel sempre atrasam ou furam. Sem saber exatamente quem foi o responsável, fica impossível cobrar.</p>
+          </div>
+          <div class="sl-card" style="border-color: var(--verde); box-shadow: 0 0 15px rgba(74,222,128,0.1);">
+            <div class="pb-badge bad-g">✅ DEPOIS — Visão do Dono</div>
+            <div class="sl-card-title">Painel de Auditoria e Log Completo</div>
+            <p class="sl-card-text">Toda ação exige login. O dono acessa o painel e vê o log exato: "Vendedor João deu baixa de 5 parafusos às 14h". Alertas de itens no vermelho apitam direto no celular. Transparência e controle absoluto.</p>
+          </div>
+
+          <div class="sl-card">
+            <div class="pb-badge bad-r">❌ ANTES (HOJE) — Ferramentas</div>
+            <div class="sl-card-title">O "Sumiço" das Chaves Manuais</div>
+            <p class="sl-card-text">Uma máquina queimar é desgaste normal de trabalho. Mas a equipe pega chave de fenda, chave estrela, chave de regulagem e trenas que "criam pernas" toda semana. A empresa gasta rios de dinheiro repondo chave básica porque ninguém sabe quem perdeu.</p>
+          </div>
+          <div class="sl-card" style="border-color: var(--verde); box-shadow: 0 0 15px rgba(74,222,128,0.1);">
+            <div class="pb-badge bad-g">✅ DEPOIS — Ferramentas</div>
+            <div class="sl-card-title">Almoxarifado Exige a Troca Justa</div>
+            <p class="sl-card-text">O sistema registra na ficha do funcionário cada chave de fenda ou máquina retirada. Regra inviolável imposta pelo sistema: O Almoxarifado <strong>só consegue</strong> dar baixa para entregar uma ferramenta nova se o funcionário entregar fisicamente a velha/gasta no mesmo momento.</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 5 — MÓDULOS -->
+        <div class="slide-panel" id="sl-5">
+          <div class="sl-tag">Arquitetura de Software</div>
+          <h2 class="sl-title">Os 6 Módulos da Sua Operação</h2>
+          <p class="sl-desc">Interfaces simples e separadas. Cada funcionário vê apenas o que precisa, garantindo sigilo.</p>
+
+          <div class="mods-grid" style="margin-top: 1rem;">
+            <div class="mod m-v"><div class="mod-icon">🔐</div><div class="mod-title">Painel Administrativo</div><div class="mod-role">Nível 1 — Acesso Total (Dono)</div><p class="mod-text">A torre de controle. Visualiza toda a empresa em uma tela só. O Admin é o único que gerencia as impressoras e tem controle total do caixa.</p></div>
+            <div class="mod m-t"><div class="mod-icon">🛒</div><div class="mod-title">Vendas / Distribuidora</div><div class="mod-role">Nível 2 — Vendedor (Balcão)</div><p class="mod-text">Um sistema de PDV focado em rapidez. Busca o material, adiciona ao carrinho, fecha a nota e avisa o cliente no Zap.</p></div>
+            <div class="mod m-l"><div class="mod-icon">📱</div><div class="mod-title">Chão de Fábrica (Mobile)</div><div class="mod-role">Nível 3 — Operador / Montador</div><p class="mod-text">Interface de botões enormes para o celular. O montador não vai perder tempo com burocracia no teclado.</p></div>
+            <div class="mod m-s"><div class="mod-icon">📦</div><div class="mod-title">Almoxarifado (O Xerife)</div><div class="mod-role">Nível 4 — Estoquista</div><p class="mod-text">O Almoxarifado é quem comanda e audita todas as chaves de regulagem, máquinas, parafusos e trenas. O ralo acaba aqui.</p></div>
+            <div class="mod m-m"><div class="mod-icon">🤖</div><div class="mod-title">Agente Operacional (IA)</div><div class="mod-role">Exclusivo Admin</div><p class="mod-text">Cansado de menus? Abra um chat e peça em português: "Cadastra esse perfil, verifica saldo, me dá os relatórios".</p></div>
+            <div class="mod m-e"><div class="mod-icon">🔍</div><div class="mod-title">Câmera de Segurança Virtual</div><div class="mod-role">Exclusivo Admin</div><p class="mod-text">O módulo "Log" grava absolutamente todo clique feito no sistema. Nenhuma informação é excluída sem rastro.</p></div>
+          </div>
+        </div>
+
+        <!-- SLIDE 6 — DASHBOARD (UI) -->
+        <div class="slide-panel" id="sl-6">
+          <div class="sl-tag">A Visão do Comando</div>
+          <h2 class="sl-title">Dashboard Gerencial</h2>
+          <p class="sl-desc">Gráficos gerenciais em tempo real. Veja quais materiais sustentam a empresa esta semana.</p>
+
+          <div class="dash" style="margin-top: 1rem;">
+            <div class="dash-bar">
+              <div class="dots"><div class="dot" style="background:#f87171"></div><div class="dot" style="background:#fbbf24"></div><div class="dot" style="background:var(--verde)"></div></div>
+              <div class="dash-name">VIDRATO WEB APP — 🟢 ONLINE</div>
+            </div>
+            <div class="dash-body" style="padding: 1.5rem;">
+              <div class="kpi-row" style="grid-template-columns: 1fr 1fr;">
+                <div class="kpi" style="border-left-color:var(--verde)"><div class="kpi-l">Faturamento Hoje</div><div class="kpi-v" style="font-size:1.5rem; color:var(--verde)">R$ 18.420</div></div>
+                <div class="kpi" style="border-left-color:#38bdf8"><div class="kpi-l">Obras na Fábrica</div><div class="kpi-v" style="font-size:1.5rem; color:#38bdf8">9 Portões</div></div>
+                <div class="kpi" style="border-left-color:#f87171"><div class="kpi-l">Alertas de Estoque</div><div class="kpi-v" style="font-size:1.5rem; color:#f87171">3 Críticos</div></div>
+                <div class="kpi" style="border-left-color:#fbbf24"><div class="kpi-l">Chaves/Ferramentas</div><div class="kpi-v" style="font-size:1.5rem; color:#fbbf24">18 Ativas</div></div>
+              </div>
+
+              <div class="chart-box" style="margin-top: 1rem;">
+                <div class="chart-ttl">📊 Saídas na Semana (Unidades)</div>
+                <div class="bars">
+                  <div class="bw"><span class="b-val val-anim">521</span><div class="b b-gold" data-height="75%"></div><div class="bl">Gold</div></div>
+                  <div class="bw"><span class="b-val val-anim">615</span><div class="b b-green" data-height="88%"></div><div class="bl">50x30</div></div>
+                  <div class="bw"><span class="b-val val-anim">310</span><div class="b b-blue" data-height="45%"></div><div class="bl">Lambri</div></div>
+                  <div class="bw"><span class="b-val val-anim">430</span><div class="b b-orange" data-height="62%"></div><div class="bl">Chapa</div></div>
+                  <div class="bw"><span class="b-val val-anim">380</span><div class="b b-purple" data-height="55%"></div><div class="bl">Roldana</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 7 — SEGURANÇA E ACESSOS -->
+        <div class="slide-panel" id="sl-7">
+          <div class="sl-tag">Controle e Prevenção de Perdas</div>
+          <h2 class="sl-title">Hierarquia de Acesso e<br>Travas de Sistema</h2>
+          <p class="sl-desc">A segurança do sistema é baseada em "Visão Limitada" e "Baixa Condicionada".</p>
+
+          <div class="sl-card" style="border-top: 4px solid var(--verde);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👑</div>
+            <div class="sl-card-title" style="color: var(--verde);">O Dono (Gestor) - Nível 1</div>
+            <p class="sl-card-text">A única pessoa com o poder de alterar tabelas de preços e ter <strong>ACESSO TOTAL</strong>. A visão de lucratividade é blindada apenas para este usuário. Ele aprova onde cada impressora física opera e os alertas do sistema.</p>
+          </div>
+
+          <div class="sl-card" style="border-top: 4px solid #38bdf8;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛒</div>
+            <div class="sl-card-title" style="color: #38bdf8;">Time de Vendas - Nível 2</div>
+            <p class="sl-card-text">Apenas visualiza o <strong>Preço de Venda Final</strong>. Bloqueado de alterar preços. Seu trabalho é gerar pedidos que disparam a separação no galpão via impressora.</p>
+          </div>
+
+          <div class="sl-card" style="border-top: 4px solid #fca5a5;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏭</div>
+            <div class="sl-card-title" style="color: #fca5a5;">Produção & Almoxarifado - Nível 3</div>
+            <p class="sl-card-text"><strong>Cegos para Dinheiro.</strong> Lidam estritamente com as quantidades. O sistema é travado: SÓ permite dar baixa de estoque se a Ordem Oficial existir no sistema.</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 8 — CONCORRENTES -->
+        <div class="slide-panel" id="sl-8">
+          <div class="sl-tag">Posicionamento de Mercado</div>
+          <h2 class="sl-title">Por Que Plataformas Genéricas Não Atendem</h2>
+          <p class="sl-desc">Sistemas comerciais comuns (Bling, Wvetro) entram em colapso quando você tem Loja e Fábrica no mesmo galpão.</p>
+
+          <div class="table-responsive">
+            <table class="roi-t" style="min-width: 100%;">
+              <thead><tr><th>A Dor Real</th><th>Genéricos (Bling/Wvetro)</th></tr></thead>
+              <tbody>
+                <tr><td style="color: var(--branco);">Evitar Furo de Estoque</td><td style="color: #fca5a5;">❌ Bugam e aceitam venda dupla</td></tr>
+                <tr><td style="color: var(--branco);">Trancar Preços de Custo</td><td style="color: #fbbf24;">⚠️ Fácil de vazar telas de lucro</td></tr>
+                <tr><td style="color: var(--branco);">Regra de Devolução de Ferramenta</td><td style="color: #fca5a5;">❌ Inexistente (ignoram patrimônio)</td></tr>
+                <tr><td style="color: var(--branco);">Alertas Anti-Frete Expresso</td><td style="color: #fca5a5;">❌ Reativos (exigem ler relatórios)</td></tr>
+                <tr><td style="color: var(--branco);">Impressão em 1-Clique no Galpão</td><td style="color: #fbbf24;">⚠️ Demorado, exige múltiplos cliques</td></tr>
+                <tr style="background: rgba(255,255,255,0.03);"><td style="color: var(--text-dim); font-weight: bold;">Custo Mensal</td><td style="color: #fca5a5; font-weight: bold;">Alto TCO (cobram por usuário/nota)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SLIDE 9 — INTEGRAÇÕES -->
+        <div class="slide-panel" id="sl-9">
+          <div class="sl-tag">Sem Complicações</div>
+          <h2 class="sl-title">Integrado e Em Nuvem</h2>
+          <p class="sl-desc">Toda a orquestração acontece em uma interface única.</p>
+
+          <div class="int-grid" style="margin-top: 1rem; grid-template-columns: 1fr;">
+            <div class="int-card" style="border-color:var(--verde);background:var(--verde-faint)">
+              <div class="int-ic">🖨️</div>
+              <div class="int-nm" style="color:var(--verde)">Roteamento de Impressoras</div>
+              <p class="int-ds">Duas impressoras integradas: Almoxarifado e Produção. O Admin/Venda decide em qual máquina o pedido sai com 1 clique.</p>
+            </div>
+            <div class="int-card">
+              <div class="int-ic">💬</div>
+              <div class="int-nm">Workflow via WhatsApp</div>
+              <p class="int-ds">Habilita a propagação automática de notificações ou disponibiliza os arquivos de faturamento (NF-e) ao cliente.</p>
+            </div>
+            <div class="int-card">
+              <div class="int-ic">🧾</div>
+              <div class="int-nm">Conformidade Tributária Integrada</div>
+              <p class="int-ds">Transmite os dados ao portal fiscal pertinente e gera a NF-e de forma nativa, sem usar sistema do governo.</p>
+            </div>
+            <div class="int-card">
+              <div class="int-ic">☁️</div>
+              <div class="int-nm">Hospedagem Blindada (Cloud)</div>
+              <p class="int-ds">Se o servidor físico queimar, os dados permanecem preservados na nuvem. Acesse tudo pelo 4G do celular.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 10 — IA CHATBOT -->
+        <div class="slide-panel" id="sl-10">
+          <div class="sl-tag">Modernidade Real 2026</div>
+          <h2 class="sl-title">Chatbot Literal e Prático</h2>
+          <p class="sl-desc">Esqueça formulários. Converse com o sistema e ele resolve o problema operacional.</p>
+
+          <div class="ia-chat" style="padding: 1.5rem;">
+            <div class="msg msg-user">
+              <div class="msg-name">Admin VIDRATO</div>
+              <div class="bubble bubble-u">Qual é o saldo atual do Perfil Gold 30x60?</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-name">🤖 IA VIDRATO</div>
+              <div class="bubble bubble-a">
+                Perfil Gold 30×60 mm:<br>
+                Estoque total: <strong>148 barras</strong><br>
+                Reservado (3 OPs): <strong>24 barras</strong><br>
+                <strong style="color:var(--verde)">Disponível para venda: 124 barras</strong><br>
+                ⚠️ Em alta — +38% esta semana.
+              </div>
+            </div>
+            <div class="msg msg-user">
+              <div class="msg-name">Admin VIDRATO</div>
+              <div class="bubble bubble-u">Cadastra: Tubo quadrado 25x25 Suprema, R$ 32,00, 60 barras.</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-name">🤖 IA VIDRATO</div>
+              <div class="bubble bubble-a">
+                ✅ Cadastrado!<br>
+                Nome: <strong>Tubo Quadrado 25×25 — Suprema</strong><br>
+                Preço: <strong>R$ 32,00/barra</strong><br>
+                Estoque: <strong>60 barras</strong><br>
+                Log registrado. Definir estoque mínimo?
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 1.5rem; background:var(--cinza-1);border:1px solid rgba(255,255,255,0.05);border-left:4px solid #f87171;padding:1.5rem; border-radius: 6px;">
+            <div style="font-weight:700;margin-bottom:.5rem; color: var(--branco); font-size: 1.1rem;">🚨 Alertas Anti-Ruptura (Fim do Frete Sedex)</div>
+            <p style="color:var(--text-mid);font-size:1rem;line-height:1.6">O sistema avisa pro ativamente: <em>"Faltam apenas 6 pacotes de Lambri Branco, o mínimo é 20"</em>. Você compra com calma na sexta-feira e evita pagar o Frete Sedex absurdo na segunda.</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 11 — ROI -->
+        <div class="slide-panel" id="sl-11">
+          <div class="sl-tag">A Prova Financeira</div>
+          <h2 class="sl-title">Retorno Conservador<br>e Garantido</h2>
+          <p class="sl-desc">No cenário mais pessimista, a fragmentação de processos e o descaso com patrimônio já são os maiores ralos da sua empresa.</p>
+          
+          <div class="highlight-box" style="margin-top: 1rem; padding: 1.5rem;">
+            <div style="font-size:3rem;line-height:1">🖨️</div>
+            <div style="flex:1;">
+              <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--verde);line-height:1; margin-bottom: .5rem;">Logística 3x Mais Rápida</div>
+              <p style="color:var(--text-mid);font-size:0.95rem;line-height:1.5">Faturamento no balcão → Impresso no galpão simultaneamente. Fim dos "pedidos de boca".</p>
+            </div>
+          </div>
+
+          <div class="sl-card" style="display: flex; justify-content: space-between; border-left: 4px solid var(--verde); margin-top: 1rem;">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Fábrica parada por furos</div>
+              <div style="font-weight: 800; color: var(--branco);">Fim dos conflitos de estoque</div>
+            </div>
+            <div style="color: var(--verde); font-weight: 800;">+ R$ 800/mês</div>
+          </div>
+          
+          <div class="sl-card" style="display: flex; justify-content: space-between; border-left: 4px solid var(--verde);">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Sumiço no Almoxarifado</div>
+              <div style="font-weight: 800; color: var(--branco);">Auditoria de peças avulsas</div>
+            </div>
+            <div style="color: var(--verde); font-weight: 800;">+ R$ 400/mês</div>
+          </div>
+
+          <div class="sl-card" style="display: flex; justify-content: space-between; border-left: 4px solid var(--verde);">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Despesas c/ Frete Emergencial</div>
+              <div style="font-weight: 800; color: var(--branco);">Alertas IA evitam ruptura</div>
+            </div>
+            <div style="color: var(--verde); font-weight: 800;">+ R$ 400/mês</div>
+          </div>
+
+          <div class="sl-card" style="display: flex; justify-content: space-between; border-left: 4px solid var(--verde);">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Cliente vai pro vizinho</div>
+              <div style="font-weight: 800; color: var(--branco);">Fim da Perda de Vendas (Material Faltante)</div>
+            </div>
+            <div style="color: var(--verde); font-weight: 800;">+ R$ 1.200/mês</div>
+          </div>
+          
+          <div class="sl-card" style="display: flex; justify-content: space-between; border-left: 4px solid var(--verde);">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Caça ao material no galpão</div>
+              <div style="font-weight: 800; color: var(--branco);">Recuperação de Tempo (Horas Pagas)</div>
+            </div>
+            <div style="color: var(--verde); font-weight: 800;">+ R$ 500/mês</div>
+          </div>
+
+          <div style="margin-top: 1.5rem; text-align: center; padding: 1.5rem; background: rgba(74,222,128,0.08); border-radius: 8px;">
+            <div style="font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim);">Economia Base (Ano: R$ 48.600)</div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--verde); font-family: 'Syne', sans-serif;">R$ 4.050 / mês</div>
+          </div>
+        </div>
+
+        <!-- SLIDE 12 — O MUNDO REAL -->
+        <div class="slide-panel" id="sl-12">
+          <div class="sl-tag">A Verdade Operacional</div>
+          <h2 class="sl-title">O Que Sempre<br>Será Manual</h2>
+          <p class="sl-desc">O sistema não faz mágica. Estas 4 coisas sempre precisarão de alguém informando no mundo real.</p>
+          <div class="sl-card"><div class="pb-badge bad-g">Ação 1</div><div class="sl-card-title">Confirmar Chegada</div></div>
+          <div class="sl-card"><div class="pb-badge bad-g">Ação 2</div><div class="sl-card-title">Conferir Quantidade</div></div>
+          <div class="sl-card"><div class="pb-badge bad-g">Ação 3</div><div class="sl-card-title">Criar Produtos Novos</div></div>
+          <div class="sl-card"><div class="pb-badge bad-g">Ação 4</div><div class="sl-card-title">Ajustes de Perda</div></div>
+        </div>
+
+        <!-- SLIDE 13 — DIVISÃO SETORES -->
+        <div class="slide-panel" id="sl-13">
+          <div class="sl-tag">Evitando Gargalos</div>
+          <h2 class="sl-title">A Divisão de Tarefas</h2>
+          <p class="sl-desc"><strong>Regra de Ouro: Ninguém pega nada sem registrar.</strong></p>
+          <div class="sl-card" style="border-left: 4px solid var(--verde);"><div class="sl-card-title" style="color: var(--verde);">📦 Almoxarifado (Entrada)</div><p class="sl-card-text">Recebe e guarda com endereço. (Ex: Galpão A, Prat B, Pos 03).</p></div>
+          <div class="sl-card" style="border-left: 4px solid #fca5a5;"><div class="sl-card-title" style="color: #fca5a5;">⚙️ Fábrica (Saída)</div><p class="sl-card-text">Abre OP e retira o consumo. Achou peça torta? Devolve pro defeituoso.</p></div>
+          <div class="sl-card" style="border-left: 4px solid #38bdf8;"><div class="sl-card-title" style="color: #38bdf8;">🛒 Vendas (Retorno)</div><p class="sl-card-text">Registra devoluções e cancelamentos.</p></div>
+        </div>
+
+        <!-- SLIDE 14 — MURAL AVISOS -->
+        <div class="slide-panel" id="sl-14">
+          <div class="sl-tag">Comunicação e Cobrança</div>
+          <h2 class="sl-title">Avisos de Login<br>Bloqueantes</h2>
+          <p class="sl-desc">Mande um alerta que trava a tela deles na hora do login de manhã. O sistema registra o minuto exato da leitura.</p>
+          
+          <div style="background:var(--cinza-1); border-left: 4px solid #f87171; padding: 1.5rem; border-radius: 6px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 1.5rem;">
+            <div style="font-size: 0.8rem; color: #f87171; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem;">Reclamação / Cobrança Direta</div>
+            <div style="color: var(--branco); font-weight: 700; margin-bottom: 0.5rem;">Para: Operador Márcio (Fábrica)</div>
+            <p style="color: var(--text-mid); font-size: 0.95rem; line-height: 1.5;">"Márcio, estou vendo no sistema que você deixou 3 OPs abertas ontem e não finalizou. Regularize isso agora!"</p>
+            <button class="btn btn-o" style="padding: 0.6rem 1rem; font-size: 0.75rem; margin-top: 1.5rem; width: 100%; justify-content: center; background: rgba(248,113,113,0.1); color: #fca5a5; border-color: rgba(248,113,113,0.3);">Ciente (Liberar Sistema)</button>
+          </div>
+
+          <div style="background:var(--cinza-1); border-left: 4px solid #fbbf24; padding: 1.5rem; border-radius: 6px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+            <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem;">Lembrete Geral</div>
+            <div style="color: var(--branco); font-weight: 700; margin-bottom: 0.5rem;">Para: Equipe Almoxarifado</div>
+            <p style="color: var(--text-mid); font-size: 0.95rem; line-height: 1.5;">"Não esqueçam de guardar as fechaduras que chegaram hoje na prateleira C-05."</p>
+            <button class="btn btn-o" style="padding: 0.6rem 1rem; font-size: 0.75rem; margin-top: 1.5rem; width: 100%; justify-content: center; background: rgba(251,191,36,0.1); color: #fde047; border-color: rgba(251,191,36,0.3);">Ciente (Liberar Sistema)</button>
+          </div>
+        </div>
+
+        <!-- SLIDE 15 — CRONOGRAMA -->
+        <div class="slide-panel" id="sl-15">
+          <div class="sl-tag">Execução Inteligente e Otimizada</div>
+          <h2 class="sl-title">Pronto e Rodando em<br><span style="color: var(--verde);">~4 Semanas</span></h2>
+          <p class="sl-desc">A infraestrutura será construída focando exatamente no que a operação exige para mitigar perdas imediatamente e sem enrolação.</p>
+
+          <div class="sl-card">
+            <div class="pb-badge bad-g">Semana 1</div>
+            <div class="sl-card-title">A Fundação (BD e Logins)</div>
+            <p class="sl-card-text">Modelagem dos materiais e hierarquia de acesso (Dono vs Operador).</p>
+          </div>
+          <div class="sl-card">
+            <div class="pb-badge bad-g">Semana 2</div>
+            <div class="sl-card-title">Módulo Distribuidora</div>
+            <p class="sl-card-text">PDV ágil, Saldo Real (travas anti-furo) e Lógica de roteamento das impressoras TCP/IP.</p>
+          </div>
+          <div class="sl-card">
+            <div class="pb-badge bad-g">Semana 3</div>
+            <div class="sl-card-title">Fábrica & Ferramentas</div>
+            <p class="sl-card-text">Travas do Almoxarifado para troca de chaves manuais e APP Mobile.</p>
+          </div>
+          <div class="sl-card">
+            <div class="pb-badge bad-g">Semana 4</div>
+            <div class="sl-card-title">IA, Testes e Go-Live</div>
+            <p class="sl-card-text">Integração do Chatbot IA, testes de stress e entrega final do pacote funcional.</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 16 — CTA -->
+        <div class="slide-panel" id="sl-16">
+          <div class="sl-cta">
+            <div class="sl-eyebrow" style="display:inline-flex;margin-bottom:1rem"><div class="pulse-dot"></div>VIDRATO · 2026</div>
+            <h2 class="sl-title" style="text-align:center;">O Fim das Paralisações.<br>O Alinhamento Definitivo.</h2>
+            <p style="margin-bottom: 2.5rem; font-size: 1.05rem;">Solução proprietária, sob medida. Esqueça mensalidades abusivas e assinaturas de usuários por fora. Consolide suas margens reais.</p>
+            
+            <div style="background: var(--cinza-2); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; text-align: left; margin-bottom: 2.5rem;">
+              <h3 style="color: var(--branco); font-size: 1.1rem; margin-bottom: 1rem;">Próximos Passos:</h3>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem;">
+                <li style="color: var(--text-mid); font-size: 0.95rem;">✅ Aprovação do Escopo e Prazo</li>
+                <li style="color: var(--text-mid); font-size: 0.95rem;">✅ Definição do Valor (Setup vs Manutenção)</li>
+                <li style="color: var(--verde); font-weight: 700; font-size: 0.95rem;">🚀 Início Imediato — Dia 1</li>
+              </ul>
+            </div>
+
+            <button class="btn btn-g" onclick="setMode('desktop')" style="width: 100%;">Ler Documentação Técnica (Scroll)</button>
+          </div>
+        </div>
+
+      </div><!-- end slide-content-wrap -->
+    </div><!-- end slide-viewport -->
+  </div><!-- end mode-slides -->
+
+  <!-- ════ MODO NORMAL (COMPUTADOR - SCROLL) ════ -->
+  <div id="mode-normal">
+    
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hex-grid"></div>
+      <div class="hero-eyebrow" id="fluxo-n"><div class="nav-dot"></div>Proposta Técnica · VIDRATO · 2026</div>
+      <h1>
+        Sistema Integrado<br>
+        <span class="green">VIDRATO</span><br>
+        <span class="thin">Distribuição &amp; Fábrica</span>
+      </h1>
+      <p class="hero-sub">Um banco de dados central que controla tudo: alumínio, acessórios e <strong>ferramentas manuais</strong> saindo para clientes externos via distribuidora <em>e</em> consumidos internamente pela produção — sem conflito, sem dor de cabeça e sem furo de estoque.</p>
+      <div class="hero-cta">
+        <a href="#problema-n" class="btn btn-g">Ver Como Funciona</a>
+        <a href="#roi-n" class="btn btn-o">Calcular o Retorno (ROI)</a>
+      </div>
+      <div class="flow-strip">
+        <div class="flow-node">🏭 Fornecedores</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node flow-center">⬡ ESTOQUE CENTRAL VIDRATO</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" style="border-color: #38bdf8; color: #38bdf8;">🛒 Vendas (Distribuidora)</div>
+        <div class="flow-arrow" style="color:var(--text-dim)">+</div>
+        <div class="flow-node" style="border-color: #fca5a5; color: #fca5a5;">⚙️ Produção (Esquadrias)</div>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num">~4</div><div class="stat-label">Semanas (Part-time)</div></div>
+        <div><div class="stat-num">6</div><div class="stat-label">Módulos Completos</div></div>
+        <div><div class="stat-num">100%</div><div class="stat-label">Rastreabilidade Total</div></div>
+      </div>
+    </section>
+
+    <!-- FLUXO DUAL -->
+    <section class="alt-bg">
+      <div class="container">
+        <div class="stag">▸ Entendendo a Operação</div>
+        <h2 class="sh">Os 2 Caminhos de Saída<br>do Estoque VIDRATO</h2>
+        <p class="sd">O mesmo alumínio e os mesmos acessórios podem sair por dois caminhos diferentes. O novo sistema garante visualmente que nenhum setor consuma material do outro sem registro oficial.</p>
+        <div class="dual-flow reveal">
+          <div class="flow-col">
+            <div class="flow-icon-big">🛒</div>
+            <div class="flow-col-title">1. Saída para Vendas Externas</div>
+            <p style="color:var(--text-mid);font-size:.87rem;line-height:1.7">Venda direta no balcão para empresas e clientes finais. O sistema gera a nota, manda pro WhatsApp do cliente e a ordem já imprime fisicamente na expedição.</p>
+            <ul class="flow-items">
+              <li>Perfis Suprema e Gold em barras inteiras</li>
+              <li>Chapas de lambri e venezianas</li>
+              <li>Kits de roldanas e fechaduras</li>
+            </ul>
+          </div>
+          <div class="flow-col-center">
+            <div style="font-size:2.4rem">⬡</div>
+            <div style="font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:var(--verde);margin:.25rem 0">O CORAÇÃO: ESTOQUE ÚNICO</div>
+            <div style="color:var(--text-mid);font-size:.76rem;line-height:1.6;max-width:170px">Controla saldos em tempo real para os dois lados simultaneamente.</div>
+            <div class="center-badge">SALDO REAL = TOTAL - RESERVADO</div>
+            <div style="margin-top:1.2rem;font-size:.7rem;color:var(--text-dim);text-align:center;line-height:1.6">Nenhuma peça sai sem que<br>o sistema saiba quem pegou,<br>quando e para qual setor.</div>
+          </div>
+          <div class="flow-col">
+            <div class="flow-icon-big">⚙️</div>
+            <div class="flow-col-title">2. Saída para Fábrica Própria</div>
+            <p style="color:var(--text-mid);font-size:.87rem;line-height:1.7">Consumo interno de material para fabricar portas e portões. O funcionário abre uma Ordem de Produção (OP) no celular e o pedido sai na impressora da Produção.</p>
+            <ul class="flow-items">
+              <li>Montagem Suprema / Gold</li>
+              <li>Uso fracionado (ex: usar apenas 2 metros de borracha)</li>
+              <li>Acessórios gastos na montagem</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEMA -->
+    <section id="problema-n">
+      <div class="container">
+        <div class="stag">▸ O Problema e a Solução Real</div>
+        <h2 class="sh">A Diferença entre o Cenário<br>Atual e o Novo Sistema</h2>
+        <p class="sd">Abaixo listamos como a falta de comunicação sistêmica causa perdas diárias, e como o novo portal resolve isso imediatamente com inteligência e bloqueios automáticos.</p>
+        <div class="prob-grid reveal">
+          <div class="pb"><div class="pb-icon">🛒</div><span class="pb-badge bad-r">❌ ANTES (HOJE) — Distribuidora</span><div class="pb-title">Vender material que não existe mais</div><p class="pb-text">O vendedor fecha a venda de 20 barras achando que tem no estoque, mas a fábrica já tinha separado 15 daquelas barras para fazer um portão hoje de manhã. Resultado: stress com cliente e atrasos.</p></div>
+          <div class="pb"><div class="pb-icon">🛡️</div><span class="pb-badge bad-g">✅ DEPOIS — Distribuidora</span><div class="pb-title">Saldo sempre real e bloqueio anti-furo</div><p class="pb-text">O sistema calcula o <strong>saldo real</strong> em tempo real (Estoque total no galpão menos o que a fábrica já reservou). Se não tiver saldo livre, o sistema bloqueia o clique de venda na hora. Fim do problema.</p></div>
+          
+          <div class="pb"><div class="pb-icon">⚙️</div><span class="pb-badge bad-r">❌ ANTES (HOJE) — Fábrica</span><div class="pb-title">Equipe parada por falta de peça</div><p class="pb-text">O funcionário vai montar uma porta de correr e descobre na hora H que as borrachas e roldanas sumiram (foram vendidas no balcão na pressa). A produção inteira é interrompida até comprarem mais.</p></div>
+          <div class="pb"><div class="pb-icon">🔒</div><span class="pb-badge bad-g">✅ DEPOIS — Fábrica</span><div class="pb-title">Reserva blindada no início do dia</div><p class="pb-text">Ao abrir a tela da Ordem de Produção (OP), as borrachas e roldanas são marcadas como "Reservadas". Elas somem da tela de vendas do balcão. O montador tem garantia 100% de que seu material o aguarda.</p></div>
+          
+          <div class="pb"><div class="pb-icon">📊</div><span class="pb-badge bad-r">❌ ANTES (HOJE) — Dono</span><div class="pb-title">Caixa-preta das perdas e sumiços</div><p class="pb-text">O dono sabe que está perdendo dinheiro com desperdício ou acessórios que "somem", mas as planilhas do Excel sempre atrasam ou furam. Sem saber exatamente quem foi o responsável, fica impossível cobrar.</p></div>
+          <div class="pb"><div class="pb-icon">📱</div><span class="pb-badge bad-g">✅ DEPOIS — Dono</span><div class="pb-title">Painel de Auditoria e Log Completo</div><p class="pb-text">Toda ação exige login. O dono acessa o painel e vê o log exato: "Vendedor João deu baixa de 5 parafusos às 14h". Alertas de itens no vermelho apitam direto no celular. Transparência e controle absoluto.</p></div>
+
+          <div class="pb"><div class="pb-icon">🪛</div><span class="pb-badge bad-r">❌ ANTES (HOJE) — Ferramentas</span><div class="pb-title">O "Sumiço" das Chaves Manuais</div><p class="pb-text">Uma máquina queimar é desgaste normal de trabalho. Mas a equipe pega chave de fenda, chave estrela, chave de regulagem e trenas que "criam pernas" toda semana. A empresa gasta rios de dinheiro repondo chave básica porque ninguém sabe quem perdeu.</p></div>
+          <div class="pb"><div class="pb-icon">🏷️</div><span class="pb-badge bad-g">✅ DEPOIS — Ferramentas</span><div class="pb-title">Almoxarifado Exige a Troca Justa</div><p class="pb-text">O sistema registra na ficha do funcionário cada chave de fenda ou máquina retirada. Regra inviolável imposta pelo sistema: O Almoxarifado <strong>só consegue</strong> dar baixa para entregar uma ferramenta nova se o funcionário entregar fisicamente a velha/gasta no mesmo momento.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULOS -->
+    <section id="modulos-n" class="alt-bg">
+      <div class="container">
+        <div class="stag">▸ A Ferramenta Completa</div>
+        <h2 class="sh">Conheça os 6 Módulos<br>do Software</h2>
+        <p class="sd">Um sistema leve, separado por perfis. O montador da fábrica vê uma tela de botões grandes pelo celular. O gerente vê tabelas financeiras no computador. Sem misturar as bolas.</p>
+        <div class="mods-grid reveal">
+          <div class="mod m-v"><div class="mod-icon">🔐</div><div class="mod-title">Painel Administrativo</div><div class="mod-role">Nível 1 — Acesso Total (Dono)</div><p class="mod-text">A torre de controle. Visualiza toda a empresa em uma tela só. <strong>O Admin é o único usuário que possui acesso total e irrestrito.</strong> Apenas ele gerencia impressoras e controla o caixa real.</p><ul class="mod-list"><li>Aprovar compras e ajustar estoque</li><li>Relatório: Lucro Venda vs Fábrica</li><li>Gerenciar acessos dos funcionários</li><li>Poder de disparar roteamento de impressão</li></ul></div>
+          <div class="mod m-t"><div class="mod-icon">🛒</div><div class="mod-title">Vendas / Distribuidora</div><div class="mod-role">Nível 2 — Vendedor (Balcão)</div><p class="mod-text">Um sistema de PDV focado em rapidez. Acesso estritamente limitado à geração de vendas e orçamentos, sem visualização de métricas do negócio.</p><ul class="mod-list"><li>Aviso vermelho se o estoque for insuficiente</li><li>Geração automática da NF-e (PDF)</li><li>Dispara impressão na máquina do Almoxarifado</li><li>Histórico de compras por cliente</li></ul></div>
+          <div class="mod m-l"><div class="mod-icon">📱</div><div class="mod-title">Chão de Fábrica (Mobile)</div><div class="mod-role">Nível 3 — Operador / Montador</div><p class="mod-text">Interface de botões enormes para o celular. Acesso restrito e condicionado apenas ao recebimento e baixa de material autorizado.</p><ul class="mod-list"><li>Toque para abrir Ordem de Produção (OP)</li><li>Pedidos saem na impressora da Produção</li><li>Baixa fracionada (metros) só se a OP existir</li><li>Término da porta gera etiqueta QR Code pronta</li></ul></div>
+          <div class="mod m-s"><div class="mod-icon">📦</div><div class="mod-title">Almoxarifado (O Xerife)</div><div class="mod-role">Nível 4 — Estoquista</div><p class="mod-text">O Almoxarifado é quem comanda e audita todas as chaves de regulagem, máquinas, parafusos e trenas. Controle físico direto.</p><ul class="mod-list"><li>Registro digital de quem pegou cada máquina.</li><li><strong>Substituição:</strong> Só libera a nova entregando a velha.</li><li>Separação blindada (só aprova se a OP existir).</li></ul></div>
+          <div class="mod m-m"><div class="mod-icon">🤖</div><div class="mod-title">Agente Operacional (IA)</div><div class="mod-role">Exclusivo Admin</div><p class="mod-text">Cansado de menus? Abra um chat e peça em português: "Cadastra esse perfil, verifica saldo, me dá os relatórios".</p><ul class="mod-list"><li>Prevenção de crises cruzando dados da loja/fábrica</li><li>Cadastra materiais sem formulários complexos</li><li>Alertas anti-ruptura para evitar Frete Sedex</li></ul></div>
+          <div class="mod m-e"><div class="mod-icon">🔍</div><div class="mod-title">Câmera de Segurança Virtual</div><div class="mod-role">Exclusivo Admin</div><p class="mod-text">O módulo "Log" grava absolutamente todo clique feito no sistema. Nenhuma informação é excluída sem rastro.</p><ul class="mod-list"><li>Data exata e nome da máquina de origem</li><li>Saber quem alterou um preço ou cancelou venda</li><li>Auditoria mensal em Excel para exportar</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD INTERATIVO -->
+    <section id="dashboard-n">
+      <div class="container">
+        <div class="stag">▸ A Visão do Comando</div>
+        <h2 class="sh">Seu Painel Gerencial<br>em Tempo Real</h2>
+        <p class="sd">Acesse do seu celular ou de casa. Os dados ao vivo de como a distribuidora e a fábrica estão desempenhando exatamente neste minuto.</p>
+
+        <div class="dash reveal">
+          <div class="dash-bar">
+            <div class="dots">
+              <div class="dot" style="background:#f87171"></div>
+              <div class="dot" style="background:#fbbf24"></div>
+              <div class="dot" style="background:var(--verde)"></div>
+            </div>
+            <div class="dash-name">VIDRATO WEB APP — USUÁRIO: ADMINISTRADOR — 🟢 SISTEMA ONLINE</div>
+          </div>
+          <div class="dash-body">
+            
+            <div class="kpi-row">
+              <div class="kpi" style="border-left-color:var(--verde)">
+                <div class="kpi-l">Faturamento Balcão Hoje</div>
+                <div class="kpi-v" style="color:var(--verde)">R$ 18.420</div>
+                <div class="kpi-c up">▲ Subiu 9% em relação a ontem</div>
+              </div>
+              <div class="kpi" style="border-left-color:#38bdf8">
+                <div class="kpi-l">Obras na Fábrica Agora</div>
+                <div class="kpi-v" style="color:#38bdf8">9 Portões</div>
+                <div class="kpi-c" style="color:var(--text-dim)">Material para 9 já está 100% reservado</div>
+              </div>
+              <div class="kpi" style="border-left-color:#f87171">
+                <div class="kpi-l">Avisos Vermelhos de Estoque</div>
+                <div class="kpi-v" style="color:#f87171">3 Itens Críticos</div>
+                <div class="kpi-c dn">▼ Cuidado: Lambri Branco zerando!</div>
+              </div>
+              <div class="kpi" style="border-left-color:#fbbf24">
+                <div class="kpi-l">Chaves e Ferramentas</div>
+                <div class="kpi-v" style="color:#fbbf24">18 Ativas</div>
+                <div class="kpi-c" style="color:var(--text-dim)">Todas com posse assinada pela equipe</div>
+              </div>
+            </div>
+
+            <!-- GRÁFICO REFEITO E ANIMADO -->
+            <div class="chart-row">
+              <div class="chart-box">
+                <div class="chart-ttl">📊 Gráfico Visual: Materiais Mais Saídos na Semana (Unidades)</div>
+                <div class="bars">
+                  <div class="bw"><span class="b-val val-anim">521</span><div class="b b-gold" data-height="75%"></div><div class="bl">Perfil<br>Gold</div></div>
+                  <div class="bw"><span class="b-val val-anim">615</span><div class="b b-green" data-height="88%"></div><div class="bl">Tubo<br>50x30</div></div>
+                  <div class="bw"><span class="b-val val-anim">310</span><div class="b b-blue" data-height="45%"></div><div class="bl">Lambri<br>Branco</div></div>
+                  <div class="bw"><span class="b-val val-anim">430</span><div class="b b-orange" data-height="62%"></div><div class="bl">Chapa<br>Lisa</div></div>
+                  <div class="bw"><span class="b-val val-anim">380</span><div class="b b-purple" data-height="55%"></div><div class="bl">Kit<br>Roldana</div></div>
+                  <div class="bw"><span class="b-val val-anim">260</span><div class="b b-red" data-height="38%"></div><div class="bl">Borracha<br>(Metros)</div></div>
+                  <div class="bw"><span class="b-val val-anim">480</span><div class="b b-green" data-height="70%"></div><div class="bl">Perfil<br>Suprema</div></div>
+                </div>
+              </div>
+              
+              <div class="chart-box">
+                <div class="chart-ttl">🚨 Feed de Alertas Urgentes</div>
+                <div class="alert-list">
+                  <div class="al al-r"><span>🔴</span><span>URGENTE: Lambri Branco com apenas 6 pacotes. O mínimo exigido é 20. Fale com fornecedor.</span></div>
+                  <div class="al al-o"><span>🟠</span><span>Atenção: João solicitou Chave de Regulagem nova. Retenção obrigatória da chave gasta pendente no Almoxarifado.</span></div>
+                  <div class="al al-o"><span>🟠</span><span>Atenção: Borracha EPDM caiu para 180 metros hoje.</span></div>
+                  <div class="al al-b"><span>🔵</span><span>Curiosidade: O Perfil Gold está vendendo 38% a mais que na semana passada. Sucesso!</span></div>
+                  <div class="al al-g"><span>🟢</span><span>Concluído: A Fábrica acabou de finalizar o Portão Lambri da Ordem #052.</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEGURANÇA E ACESSOS -->
+    <section class="alt-bg">
+      <div class="container">
+        <div class="stag">▸ Controle e Prevenção de Perdas</div>
+        <h2 class="sh">Hierarquia de Acesso e<br>Travas de Sistema</h2>
+        <p class="sd">A segurança do sistema é baseada em "Visão Limitada" e "Baixa Condicionada". É fundamental reiterar: <strong>Cada usuário terá acesso estritamente limitado à sua função</strong>. Acesso TOTAL apenas o Administrador/Dono/Chefe.</p>
+
+        <div style="background:var(--cinza-1); border: 2px dashed #f87171; border-radius: 8px; padding: 2rem; margin-top: 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <h3 style="color: #f87171; font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.8rem;">
+            ⚠️ REGRA DE OURO DO SISTEMA
+          </h3>
+          <p style="color: var(--text-mid); font-size: 1.05rem; line-height: 1.6;">
+            Nenhum usuário da base tem acesso ao sistema completo. O Almoxarifado nunca verá os relatórios financeiros. O Vendedor nunca poderá alterar o preço de custo. O montador da Fábrica não consegue aprovar compras. <strong>Apenas você (Dono) detém o privilégio Nível 1.</strong>
+          </p>
+        </div>
+
+        <div class="mods-grid reveal" style="margin-top:2rem;">
+          <div class="mod m-verde">
+            <div class="mod-icon">👑</div>
+            <div class="mod-title">O Dono (Gestor)</div>
+            <div class="mod-role">Nível 1 — Controle Absoluto</div>
+            <p class="mod-text">A única pessoa da empresa com o poder de alterar as regras do jogo. A visão de lucratividade é blindada apenas para este usuário.</p>
+            <ul class="mod-list">
+              <li><strong>Poder Exclusivo:</strong> Adiciona produtos e altera tabelas de preços.</li>
+              <li>Visualiza métricas de lucro limpo, custos e auditoria.</li>
+              <li><strong>Gerenciamento de Rede:</strong> Define e aprova onde cada impressora física (Produção/Almoxarifado) opera.</li>
+              <li>Poder de "Override": O único que força a liberação de uma ferramenta nova se a antiga for perdida com justificativa.</li>
+            </ul>
+          </div>
+          
+          <div class="mod m-teal">
+            <div class="mod-icon">🛒</div>
+            <div class="mod-title">Time de Vendas</div>
+            <div class="mod-role">Nível 2 — Foco Comercial</div>
+            <p class="mod-text">Um painel limpo, criado apenas para acelerar o faturamento no balcão. O vendedor não tem acesso aos custos reais da empresa.</p>
+            <ul class="mod-list">
+              <li>Apenas visualiza o <strong>Preço de Venda Final</strong>.</li>
+              <li><strong style="color:#f87171">Bloqueado:</strong> Não pode alterar preços sob nenhuma circunstância.</li>
+              <li><strong>Controle de Roteamento:</strong> Ao fechar a venda, decide com 1 clique se a ordem vai ser disparada para a impressora da Produção ou para a do Almoxarifado.</li>
+            </ul>
+          </div>
+          
+          <div class="mod m-lime" style="border-top-color: var(--verde); box-shadow: 0 0 20px rgba(74, 222, 128, 0.1);">
+            <div class="mod-icon">🏭</div>
+            <div class="mod-title">Produção & Almoxarifado</div>
+            <div class="mod-role">Nível 3 — Ação Condicionada</div>
+            <p class="mod-text">Foco extremo na operação física. É aqui que o sistema acaba com o sumiço misterioso de peças avulsas, chaves manuais e borrachas.</p>
+            <ul class="mod-list">
+              <li><strong style="color:#38bdf8">Cegos para Dinheiro:</strong> Eles NÃO visualizam nenhum valor financeiro (R$). Lidam estritamente com as quantidades.</li>
+              <li><strong style="color:var(--verde)">Recebimento Cego:</strong> Eles têm uma atuação passiva. O trabalho só se inicia quando a impressora física deles cospe o ticket gerado e autorizado pelo Admin ou Vendas.</li>
+              <li><strong style="color:var(--verde)">Trava de Segurança Final:</strong> O sistema SÓ permite a baixa de estoque se a Ordem Oficial atrelada existir, provando que o material foi requisitado de cima.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VS CONCORRENTES -->
+    <section>
+      <div class="container">
+        <div class="stag">▸ Posicionamento de Mercado</div>
+        <h2 class="sh">Por Que Plataformas Genéricas<br>Não Atendem a VIDRATO</h2>
+        <p class="sd">Sistemas convencionais ("ERPs Genéricos" como Bling ou sistemas verticais caros como Wvetro) entram em colapso completo quando você tem uma <strong>Fábrica e uma Distribuidora competindo pelo mesmo material físico</strong> no mesmo galpão.</p>
+
+        <div class="table-responsive reveal">
+          <table style="width:100%;border-collapse:collapse;min-width:1000px; background: var(--cinza-1); border-radius: 8px; overflow:hidden;">
+            <thead>
+              <tr>
+                <th style="background:var(--cinza-3);padding:1.2rem;text-align:left;font-size:.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim); border-bottom: 2px solid var(--border); width: 28%;">A Dor Real do Dia a Dia</th>
+                <th style="background:var(--verde-deep);padding:1.2rem;text-align:center;font-family:'Syne',sans-serif;font-weight:800;color:var(--branco); font-size: 1.1rem; border-bottom: 2px solid var(--verde); width: 28%;">ECOSSISTEMA VIDRATO</th>
+                <th style="background:var(--cinza-3);padding:1.2rem;text-align:center;font-size:.8rem;color:var(--text-dim); border-bottom: 2px solid rgba(255,255,255,0.1); width: 22%;">ERPs e Sistemas de Nicho<br><small>(Wvetro, Bling, etc.)</small></th>
+                <th style="background:var(--cinza-3);padding:1.2rem;text-align:center;font-size:.8rem;color:var(--text-dim); border-bottom: 2px solid rgba(255,255,255,0.1); width: 22%;">Modelo Atual<br><small>(Manual / O Caos)</small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem 1.2rem;font-size:1rem;color:var(--branco)"><strong style="color:var(--verde); display:block; margin-bottom:.3rem;">Fábrica vs Loja:</strong> Impedir que o vendedor do balcão venda a peça que o montador ia usar hoje à tarde.</td>
+                <td style="border-bottom:1px solid rgba(74,222,128,0.2);padding:1rem;text-align:left;background:var(--verde-faint);font-size:1rem; color:var(--branco); line-height: 1.5;">✅ <strong style="color:var(--verde)">Trava Automática:</strong> O sistema bloqueia a peça para venda na loja assim que a OP da fábrica é aberta. O balcão nem consegue clicar nela.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Confiam na Sorte:</strong> O sistema permite vender se tiver número no estoque geral, ignorando se a fábrica ia usar, gerando furos enormes.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Baseado no Grito:</strong> Se o vendedor não for lá no fundo do galpão checar, ele vende e a fábrica para de trabalhar.</td>
+              </tr>
+              <tr>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem 1.2rem;font-size:1rem;color:var(--branco)"><strong style="color:var(--verde); display:block; margin-bottom:.3rem;">Controle de Ferramentas:</strong> Máquinas e ferramentas manuais (chaves) que somem do galpão ou quebram toda hora.</td>
+                <td style="border-bottom:1px solid rgba(74,222,128,0.2);padding:1rem;text-align:left;background:var(--verde-faint);font-size:1rem; color:var(--branco); line-height: 1.5;">✅ <strong style="color:var(--verde)">Módulo de Patrimônio:</strong> O Almoxarifado só libera uma ferramenta NOVA se o funcionário registrar e entregar fisicamente a ferramenta VELHA na mão dele.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Ignoram Patrimônio:</strong> Eles controlam mercadoria de prateleira para venda. Não possuem módulos de devolução de maquinário e chaves de uso interno.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Dinheiro no Lixo:</strong> O dono paga do próprio bolso a reposição semanal sem poder auditar com quem estava a ferramenta perdida.</td>
+              </tr>
+              <tr>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem 1.2rem;font-size:1rem;color:var(--branco)"><strong style="color:var(--verde); display:block; margin-bottom:.3rem;">Sigilo e Proteção de Custos:</strong> Impedir que o cara do almoxarifado ou da fábrica veja o quanto você paga de custo e lucra.</td>
+                <td style="border-bottom:1px solid rgba(74,222,128,0.2);padding:1rem;text-align:left;background:var(--verde-faint);font-size:1rem; color:var(--branco); line-height: 1.5;">✅ <strong style="color:var(--verde)">Cegos para Dinheiro:</strong> Hierarquia estrita. A fábrica e o almoxarifado vêm apenas as quantidades ("3 borrachas"), sem nunca visualizar um cifrão (R$).</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">⚠️ <strong style="color:#fbbf24">Telas Vazadas:</strong> É muito fácil um funcionário com acesso ao estoque esbarrar em um menu e descobrir sua margem de lucro.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Notas Expostas:</strong> Notas fiscais de fornecedor rolando soltas na mesa do escritório, visíveis para todos.</td>
+              </tr>
+              <tr>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem 1.2rem;font-size:1rem;color:var(--branco)"><strong style="color:var(--verde); display:block; margin-bottom:.3rem;">Economia de Fretes Expresso:</strong> Esquecer de pedir material vital e pagar um absurdo de frete emergencial no dia seguinte.</td>
+                <td style="border-bottom:1px solid rgba(74,222,128,0.2);padding:1rem;text-align:left;background:var(--verde-faint);font-size:1rem; color:var(--branco); line-height: 1.5;">✅ <strong style="color:var(--verde)">Alertas Inteligentes:</strong> A IA do sistema avisa *antes* do estoque zerar, forçando você a pedir no frete normal e salvando seu lucro.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Reativo:</strong> Você tem que ficar fuçando tabelas e relatórios manuais escondidos em menus para descobrir o que está faltando.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Susto Diário:</strong> O estoquista avisa "chefe, acabou" quando já é tarde demais e a produção já parou.</td>
+              </tr>
+              <tr>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem 1.2rem;font-size:1rem;color:var(--branco)"><strong style="color:var(--verde); display:block; margin-bottom:.3rem;">Desperdícios na Montagem:</strong> Perfil de alumínio que risca ou é cortado errado na serra e ninguém anota a perda.</td>
+                <td style="border-bottom:1px solid rgba(74,222,128,0.2);padding:1rem;text-align:left;background:var(--verde-faint);font-size:1rem; color:var(--branco); line-height: 1.5;">✅ <strong style="color:var(--verde)">Baixa Fracionada Rápida:</strong> Operador informa perda/refugo de centímetros direto pelo celular, mantendo a precisão da barra que sobrou.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Engessados:</strong> Só baixam unidade inteira ou exigem cálculos complexos de "composição", dificultando o fracionamento na correria.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Ralo Invisível:</strong> A lixeira da fábrica simplesmente engole o seu lucro sem que ninguém registre nada.</td>
+              </tr>
+              <tr>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem 1.2rem;font-size:1rem;color:var(--branco)"><strong style="color:var(--verde); display:block; margin-bottom:.3rem;">Impressão Mágica na Expedição:</strong> O vendedor no balcão avisa o estoque lá atrás do que o cliente quer levar.</td>
+                <td style="border-bottom:1px solid rgba(74,222,128,0.2);padding:1rem;text-align:left;background:var(--verde-faint);font-size:1rem; color:var(--branco); line-height: 1.5;">✅ <strong style="color:var(--verde)">1-Clique e Fim:</strong> Ao confirmar a venda, a impressora térmica lá no galpão cospe a listagem silenciosamente. Sem sair da cadeira.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">⚠️ <strong style="color:#fbbf24">Demorado:</strong> Exige múltiplos cliques para gerar um PDF, abrir a caixa de impressão e mandar imprimir fisicamente.</td>
+                <td style="border-bottom:1px solid rgba(255,255,255,0.05);padding:1rem;text-align:left;font-size:.95rem; color:var(--text-dim); line-height: 1.5;">❌ <strong style="color:#fca5a5">Papel de Pão:</strong> Vendedor anota na via escrita à mão e o ajudante de separação tem que adivinhar a letra.</td>
+              </tr>
+              <tr style="background: rgba(255,255,255,0.03);">
+                <td style="padding:1.5rem 1.2rem;color:var(--text-dim); font-weight: 700; font-size: 1.1rem; text-transform: uppercase;">💰 Custo e Dor de Cabeça Mensal</td>
+                <td style="padding:1.5rem;text-align:center;background:var(--verde-deep);color:var(--branco);font-family:'Syne',sans-serif;font-size:1.3rem; border-radius: 0 0 8px 0; border-bottom: 2px solid var(--verde);">IRRISÓRIO<br><small style="font-size:.85rem;font-weight:400; font-family:'DM Sans';">Nuvem própria moldada 100% para você.</small></td>
+                <td style="padding:1.5rem;text-align:center;color:#fca5a5;font-family:'Syne',sans-serif; font-size: 1.2rem; border-bottom: 2px solid rgba(255,255,255,0.05);">Alto TCO (Preço Oculto)<br><small style="font-size:.85rem;font-weight:400;color:var(--text-dim); font-family:'DM Sans';">Setup caro + Mensalidades caras que sobem cobrando por usuário extra ou emissão de nota.</small></td>
+                <td style="padding:1.5rem;text-align:center;color:#fca5a5; font-size: 1.2rem; border-bottom: 2px solid rgba(255,255,255,0.05);">Altíssimo (Ocupa o Dono)<br><small style="font-size:.85rem;font-weight:400;color:var(--text-dim);">O custo real é o seu tempo de vida perdido apagando incêndio todo dia.</small></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- IA CHAT LITERAL -->
+    <section id="ia-n" class="alt-bg">
+      <div class="container">
+        <div class="stag">▸ Modernidade Real 2026</div>
+        <h2 class="sh">Inteligência Artificial Direta ao Ponto</h2>
+        <p class="sd">Cansado de menus difíceis e formulários? O sistema possui um Chat Inteligente para o Administrador. Você apenas manda a mensagem e o sistema obedece, retornando dados na hora. Simples, literal e com <strong>alertas proativos de caixa</strong>.</p>
+
+        <div class="ia-grid reveal">
+          <div class="ia-chat">
+            <div class="ia-chat-ttl">▸ Demonstração do Chatbot</div>
+            
+            <div class="msg msg-user">
+              <div class="msg-name">Admin VIDRATO</div>
+              <div class="bubble bubble-u">Qual é o saldo atual do Perfil Gold 30x60?</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-name">🤖 IA VIDRATO</div>
+              <div class="bubble bubble-a">
+                Perfil Gold 30×60 mm:<br>
+                Estoque total: <strong>148 barras</strong><br>
+                Reservado (3 OPs): <strong>24 barras</strong><br>
+                <strong style="color:var(--verde)">Disponível para venda: 124 barras</strong><br>
+                ⚠️ Em alta — +38% esta semana.
+              </div>
+            </div>
+
+            <div class="msg msg-user">
+              <div class="msg-name">Admin VIDRATO</div>
+              <div class="bubble bubble-u">Cadastra: Tubo quadrado 25x25 Suprema, R$ 32,00, 60 barras.</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-name">🤖 IA VIDRATO</div>
+              <div class="bubble bubble-a">
+                ✅ Cadastrado!<br>
+                Nome: <strong>Tubo Quadrado 25×25 — Suprema</strong><br>
+                Preço: <strong>R$ 32,00/barra</strong><br>
+                Estoque: <strong>60 barras</strong><br>
+                Log registrado. Definir estoque mínimo?
+              </div>
+            </div>
+
+            <div class="msg msg-user">
+              <div class="msg-name">Admin VIDRATO</div>
+              <div class="bubble bubble-u">Top 5 mais vendidos da distribuidora este mês.</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-name">🤖 IA VIDRATO</div>
+              <div class="bubble bubble-a">
+                📊 Top 5 — Março 2026:<br>
+                1. Perfil Gold 30×60 — 521 barras — R$ 23.445<br>
+                2. Tubo Ret. 50×30 — 344 barras — R$ 15.480<br>
+                3. Lambri Liso — 218 pacotes — R$ 10.900<br>
+                4. Kit Roldana — 172 kits — R$ 6.880<br>
+                5. Borracha EPDM P — 1.020m — R$ 4.590<br>
+                <strong style="color:var(--verde)">Total: R$ 61.295</strong> — Exportar PDF?
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:1.5rem; color: var(--branco);">O Poder de Ter Respostas Sem Gastar Tempo</h3>
+            <div style="display:flex;flex-direction:column;gap:1.5rem">
+              <div style="background:var(--cinza-1);border:1px solid rgba(255,255,255,0.05);border-left:4px solid var(--verde);padding:1.5rem; border-radius: 6px;">
+                <div style="font-weight:700;margin-bottom:.5rem; color: var(--branco); font-size: 1.1rem;">💬 Cadastros e Dúvidas em Segundos</div>
+                <p style="color:var(--text-mid);font-size:1rem;line-height:1.6">Ao invés de caçar relatórios mensais ou ensinar o estagiário a preencher infinitos campos para colocar um material novo, você apenas "fala" com o sistema. Ele entende, separa as categorias e aloca as quantidades no banco de dados.</p>
+              </div>
+
+              <div style="background:var(--cinza-1);border:1px solid rgba(255,255,255,0.05);border-left:4px solid #f87171;padding:1.5rem; border-radius: 6px;">
+                <div style="font-weight:700;margin-bottom:.5rem; color: var(--branco); font-size: 1.1rem;">🚨 Alertas Anti-Ruptura (O Fim do Frete Sedex)</div>
+                <p style="color:var(--text-mid);font-size:1rem;line-height:1.6">O sistema analisa a saída média da semana e solta pop-ups de <strong>ALERTA DE FURAÇÃO</strong> antes mesmo do estoque zerar. Ele avisa pro ativamente: <em>"Faltam apenas 6 pacotes de Lambri Branco, o mínimo é 20"</em>. Isso permite que você compre com calma na sexta-feira, evitando tomar susto na segunda e pagar um Frete Expresso/Sedex absurdo.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROI -->
+    <section id="roi-n">
+      <div class="container">
+        <div class="stag">▸ A Prova Financeira</div>
+        <h2 class="sh">Retorno Sobre o Investimento<br>Conservador e Garantido</h2>
+        <p class="sd">No cenário mais pessimista e realista possível, a fragmentação de processos e o descaso com patrimônio (ferramentas e chaves) já são os maiores ralos da sua empresa. Veja como o sistema estanca essa perda.</p>
+
+        <div class="highlight-box reveal">
+          <div style="font-size:4rem;line-height:1">🖨️</div>
+          <div style="flex:1;min-width:250px">
+            <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--verde);line-height:1; margin-bottom: .8rem;">Logística Interna Otimizada</div>
+            <div style="color:var(--branco);font-size:1.15rem;font-weight:600;margin-bottom:1rem;">Faturamento confirmado → Documentação expedida no galpão simultaneamente.</div>
+            <p style="color:var(--text-mid);font-size:1.05rem;line-height:1.6">Ao finalizar o atendimento no balcão, a ordem de separação é automaticamente impressa via protocolo térmico no centro logístico, eliminando deslocamentos improdutivos da equipe comercial e erradicando extravios de documentos físicos ou "pedidos de boca".</p>
+          </div>
+          <div style="text-align:center;padding:1.5rem 2.5rem;background:var(--cinza-1);border:2px solid var(--verde);border-radius: 12px; margin:0 auto">
+            <div style="font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:var(--verde)">3×</div>
+            <div style="font-size:.8rem;color:var(--text-mid);letter-spacing:3px;text-transform:uppercase; margin-top: .5rem;">Maior Eficiência</div>
+            <div style="font-size:.9rem;font-weight:700; color: var(--branco);">nas Separações</div>
+          </div>
+        </div>
+
+        <div class="table-responsive reveal">
+          <table class="roi-t">
+            <thead>
+              <tr>
+                <th>Gargalos Identificados Hoje</th>
+                <th>Impacto Operacional Corriqueiro</th>
+                <th>Resolução Tecnológica VIDRATO</th>
+                <th>Projeção Conservadora (Mês)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Concorrência Interna de Materiais</td>
+                <td>Fábrica parada esperando material porque a loja vendeu a peça que iam usar.</td>
+                <td>Trava sistêmica bloqueando venda de itens pré-alocados (Ex: Salva 2 a 3 paradas/mês).</td>
+                <td class="rv">+ R$ 800/mês</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Falta de Controle de Suprimentos</td>
+                <td>Sumiço de ferragens soltas, parafusos e silicone na correria.</td>
+                <td>Acesso restrito e baixa apenas com Ordem Oficial existente.</td>
+                <td class="rv">+ R$ 400/mês</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Descontrole de Ferramentas Manuais</td>
+                <td>Chaves manuais, trenas e máquinas sendo perdidas e recompradas no caixa da loja toda semana.</td>
+                <td>Troca de chave só é liberada entregando a velha/queimada ao Almoxarife (Fim da recompra inútil).</td>
+                <td class="rv">+ R$ 150/mês</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Despesas com Frete Emergencial</td>
+                <td>Material crítico falta do nada, forçando a pagar frete Sedex/Expresso caríssimo.</td>
+                <td>Alerta Inteligente avisa o limite de ruptura 5 dias antes de faltar (Salva fretes).</td>
+                <td class="rv">+ R$ 400/mês</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Perda de Vendas p/ Concorrentes</td>
+                <td>Falta de material a pronta entrega faz o cliente atravessar a rua e comprar no vizinho.</td>
+                <td>Sistema cruza a base de dados, garantindo estoque ativo e alertas precisos (Fim da venda perdida).</td>
+                <td class="rv">+ R$ 1.200/mês</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Perda de Tempo (Horas Pagas)</td>
+                <td>Funcionários perdem horas por semana caçando material "perdido" ou refazendo contagens cegas.</td>
+                <td>Localização por endereçamento e saldos reais em tempo real eliminam a caça ao tesouro.</td>
+                <td class="rv">+ R$ 500/mês</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--branco);">Descontentamento de Clientes</td>
+                <td>Atrasos geram perda incalculável de indicações futuras e recompra. A falha de hoje mata o lucro de amanhã.</td>
+                <td>Entregas blindadas no prazo garantem a fidelidade e protegem a marca (Cálculo base conservador).</td>
+                <td class="rv">+ R$ 600/mês</td>
+              </tr>
+              <tr style="background: rgba(74, 222, 128, 0.05);">
+                <td colspan="3" style="font-weight:800;color:var(--verde); font-size: 1.1rem; text-align: right; padding-right: 2rem;">ECONOMIA REAL PROTEGIDA (BASE PESSIMISTA / ANO = R$ 48.600,00):</td>
+                <td class="rv" style="font-size:1.4rem">R$ 4.050 ao mês</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- O MUNDO REAL (ADICIONADO) -->
+    <section id="mundo-real-n" class="alt-bg">
+      <div class="container">
+        <div class="stag">▸ A Realidade da Operação</div>
+        <h2 class="sh">O Que Sempre Será<br>Feito Manualmente</h2>
+        <p class="sd">Sistemas de gestão falham miseravelmente quando prometem que tudo é mágico e automático. Estas ações do <strong>Mundo Real</strong> sempre precisarão de alguém informando o que ocorreu no galpão.</p>
+        
+        <div class="prob-grid reveal">
+          <div class="pb" style="border-top: 4px solid var(--verde);">
+            <div class="pb-badge bad-g" style="background:var(--cinza-2); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1)">1️⃣ Ação Manual Inevitável</div>
+            <div class="pb-title">Confirmar a Chegada</div>
+            <p class="pb-text">O sistema não adivinha se o fornecedor entregou. Alguém confere se está inteiro, confere a nota e registra a entrada.</p>
+          </div>
+          <div class="pb" style="border-top: 4px solid var(--verde);">
+            <div class="pb-badge bad-g" style="background:var(--cinza-2); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1)">2️⃣ Ação Manual Inevitável</div>
+            <div class="pb-title">Conferir a Quantidade Real</div>
+            <p class="pb-text">Pediu 100 perfis, mas chegaram 96? O sistema não sabe disso sozinho. Alguém precisa confirmar a quantidade real.</p>
+          </div>
+          <div class="pb" style="border-top: 4px solid var(--verde);">
+            <div class="pb-badge bad-g" style="background:var(--cinza-2); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1)">3️⃣ Ação Manual Inevitável</div>
+            <div class="pb-title">Criar Produtos Novos</div>
+            <p class="pb-text">Comprar um item inédito (ex: vidro 8mm fumê especial) exige um rápido cadastro inicial no banco de dados.</p>
+          </div>
+          <div class="pb" style="border-top: 4px solid var(--verde);">
+            <div class="pb-badge bad-g" style="background:var(--cinza-2); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1)">4️⃣ Ação Manual Inevitável</div>
+            <div class="pb-title">Ajustes de Perdas/Quebras</div>
+            <p class="pb-text">Peça quebrou no galpão ou sumiu? Alguém precisa registrar o evento de <em>AJUSTE_ESTOQUE</em> informando a perda.</p>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Syne',sans-serif; font-size:2.2rem; margin-top: 5rem; color:var(--branco);">Divisão de Setores (Evitando Gargalos)</h3>
+        <p class="sd" style="margin-bottom: 3rem;">Para evitar gargalo, cada setor registra somente o que faz. <strong>Regra de Ouro: Ninguém pega material sem registrar.</strong></p>
+
+        <div class="mods-grid reveal">
+          <div class="mod m-verde">
+            <div class="mod-icon">📦</div>
+            <div class="mod-title">Distribuidora / Almoxarifado</div>
+            <div class="mod-role">Responsável pela Entrada</div>
+            <p class="mod-text">Recebe a compra, confere quantidades e guarda com <strong style="color:var(--branco)">Localização Exata</strong>. Registra os defeitos antes de guardar.</p>
+            <div style="background:rgba(255,255,255,0.05); padding:.8rem; border-radius:4px; font-family:'DM Mono'; font-size:.8rem; color:var(--verde);">Local Ex: GALPÃO A » PRATELEIRA B » POS 03</div>
+          </div>
+          <div class="mod" style="border-top-color:#fca5a5;">
+            <div class="mod-icon">⚙️</div>
+            <div class="mod-title">Fábrica / Produção</div>
+            <div class="mod-role" style="color:#fca5a5">Responsável pelo Consumo</div>
+            <p class="mod-text">Abre a OP e retira material. Notou peça torta ou riscada na hora de usar? Avisa o sistema e devolve pro estoque defeituoso.</p>
+          </div>
+          <div class="mod" style="border-top-color:#38bdf8;">
+            <div class="mod-icon">🛒</div>
+            <div class="mod-title">Vendas</div>
+            <div class="mod-role" style="color:#38bdf8">Responsável pelo Retorno</div>
+            <p class="mod-text">Lida com produto devolvido pelo cliente ou cancelamentos. O sistema volta o item pro estoque automaticamente.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MURAL DE AVISOS E LEMBRETES -->
+    <section id="comunicacao-n">
+      <div class="container">
+        <div class="stag">▸ Comunicação & Cobrança Direta</div>
+        <h2 class="sh">Mural de Avisos<br>e Bloqueios de Tela</h2>
+        <p class="sd">A comunicação da diretoria não se perde mais em grupos de WhatsApp. Agora o sistema garante que o funcionário não apenas receba o recado, mas formalize a leitura.</p>
+
+        <!-- AVISOS POR LOGIN -->
+        <div class="highlight-box reveal" style="margin-top: 2rem; flex-direction: column; align-items: flex-start; padding: 2.5rem; background: var(--cinza-2); border: 1px solid rgba(255,255,255,0.05);">
+          <div style="display:flex; align-items:center; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="font-size:3rem;line-height:1">📢</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--verde);line-height:1; margin-bottom: .5rem;">Lembretes e Avisos por Login</div>
+              <div style="color:var(--branco);font-size:1.1rem;font-weight:600;">O Chefe cobra, o sistema trava a tela.</div>
+            </div>
+          </div>
+          <p style="color:var(--text-mid);font-size:1.05rem;line-height:1.6; margin-bottom: 2rem; max-width: 800px;">
+            Sempre que o chefe precisar reclamar, cobrar uma tarefa ou avisar para não esquecer algo importante, ele envia uma mensagem atrelada ao perfil. Quando o funcionário faz o login de manhã, a mensagem <strong>bloqueia o sistema</strong> e ele não consegue trabalhar até clicar confirmando que leu.
+          </p>
+          
+          <div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            
+            <div style="background:var(--cinza-1); border-left: 4px solid #f87171; padding: 1.5rem; border-radius: 6px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+              <div style="font-size: 0.8rem; color: #f87171; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem;">Reclamação / Cobrança Direta</div>
+              <div style="color: var(--branco); font-weight: 700; margin-bottom: 0.5rem;">Para: Operador Márcio (Fábrica)</div>
+              <p style="color: var(--text-mid); font-size: 0.95rem; line-height: 1.5;">"Márcio, estou vendo no sistema que você deixou 3 OPs abertas ontem e não finalizou. Por favor, regularize isso agora antes de iniciar as montagens de hoje."</p>
+              <button class="btn btn-o" style="padding: 0.6rem 1rem; font-size: 0.75rem; margin-top: 1.5rem; width: 100%; justify-content: center; background: rgba(248,113,113,0.1); color: #fca5a5; border-color: rgba(248,113,113,0.3);">Li e estou Ciente (Liberar Sistema)</button>
+            </div>
+            
+            <div style="background:var(--cinza-1); border-left: 4px solid #fbbf24; padding: 1.5rem; border-radius: 6px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+              <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem;">Lembrete Geral</div>
+              <div style="color: var(--branco); font-weight: 700; margin-bottom: 0.5rem;">Para: Equipe Almoxarifado</div>
+              <p style="color: var(--text-mid); font-size: 0.95rem; line-height: 1.5;">"Não esqueçam de guardar o lote de fechaduras que chegou hoje de manhã na prateleira C-05. Pelo sistema, ainda consta como solto na doca da entrada."</p>
+              <button class="btn btn-o" style="padding: 0.6rem 1rem; font-size: 0.75rem; margin-top: 1.5rem; width: 100%; justify-content: center; background: rgba(251,191,36,0.1); color: #fde047; border-color: rgba(251,191,36,0.3);">Li e estou Ciente (Liberar Sistema)</button>
+            </div>
+
+          </div>
+          
+          <div style="width: 100%; text-align:center; color:var(--text-dim); margin-top: 2.5rem; font-size: 0.95rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 6px;">
+            🔒 <strong>Como ter certeza que ele viu?</strong> O sistema grava no banco de dados o IP, a data e o <strong>minuto exato</strong> em que o funcionário clicou no botão "Ciente". A desculpa de "não vi o recado" deixa de existir.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CRONOGRAMA -->
+    <section id="cronograma-n" class="alt-bg">
+      <div class="container">
+        <div class="stag">▸ Execução Inteligente e Otimizada</div>
+        <h2 class="sh">Pronto e Rodando<br>em <span style="color:var(--verde)">~4 Semanas</span></h2>
+        <p class="sd">A infraestrutura será construída focando exatamente no que a operação atual exige para mitigar perdas imediatamente e sem enrolação.</p>
+
+        <div class="timeline">
+          <div class="tl-item reveal">
+            <div class="tl-dot">1</div>
+            <div class="tl-box">
+              <div class="tl-week">Semana 1 (Fase Base)</div>
+              <div class="tl-title">A Fundação Segura: O Banco de Dados Central</div>
+              <ul class="tl-tasks">
+                <li>Cadastro robusto de tudo que existe no galpão físico.</li>
+                <li>Configurar o servidor blindado nas nuvens e o sistema de login da empresa.</li>
+                <li>Definição estrita das matrizes de acesso descritas (Admin, Vendas e Montador).</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="tl-item reveal">
+            <div class="tl-dot">2</div>
+            <div class="tl-box">
+              <div class="tl-week">Semana 2 (Fase Loja)</div>
+              <div class="tl-title">O Módulo da Distribuidora e Roteamento</div>
+              <ul class="tl-tasks">
+                <li>Criação da tela principal de vendas para o balcão (carrinho de compras ágil).</li>
+                <li>Implementação da Regra de Ouro do Saldo Real (Travas anti-furo de estoque).</li>
+                <li>Configurar a lógica de roteamento TCP/IP das impressoras (Almoxarifado vs Produção).</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="tl-item reveal">
+            <div class="tl-dot">3</div>
+            <div class="tl-box">
+              <div class="tl-week">Semana 3 (Fase Indústria)</div>
+              <div class="tl-title">Os Aplicativos de Produção e Ferramentas</div>
+              <ul class="tl-tasks">
+                <li>Refinamento da interface mobile para o chão de fábrica (botões grandes e responsivos).</li>
+                <li>Automatização da rotina de "Reserva" que protege os insumos na pré-produção.</li>
+                <li>Programar o Módulo de Patrimônio com as travas sistêmicas de troca de chaves e máquinas.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="tl-item reveal">
+            <div class="tl-dot">4</div>
+            <div class="tl-box">
+              <div class="tl-week">Semana 4 (Fase Final)</div>
+              <div class="tl-title">Inteligência Operacional, Testes e Go-Live</div>
+              <ul class="tl-tasks">
+                <li>Integração da IA corporativa (Chatbot) conectada ao banco de dados em tempo real.</li>
+                <li>Testes unitários e simulação de cenário de estresse produtivo e conflitos de vendas.</li>
+                <li>Entrega do pacote de software funcional, treinamento prático e o início da operação real.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTEGRAÇÕES -->
+    <section>
+      <div class="container">
+        <div class="stag">▸ Sem Complicações</div>
+        <h2 class="sh">Conectado com seu<br>Fluxo Operacional Atual</h2>
+        <p class="sd">A vida de vocês já é corrida demais para requerer a utilização de múltiplos ambientes simultâneos. Toda a orquestração acontece em uma interface única.</p>
+
+        <div class="int-grid reveal">
+          <div class="int-card" style="border-color:var(--verde);background:var(--verde-faint)">
+            <div class="int-ic">🖨️</div>
+            <div class="int-nm" style="color:var(--verde)">Roteamento de Impressoras</div>
+            <p class="int-ds">Duas impressoras integradas: uma no Almoxarifado e outra na Produção. O Admin e a Venda decidem em qual máquina o pedido vai sair com apenas um clique.</p>
+          </div>
+          <div class="int-card">
+            <div class="int-ic">💬</div>
+            <div class="int-nm">Workflow via WhatsApp</div>
+            <p class="int-ds">Habilita a propagação automática de notificações ou disponibiliza os arquivos de faturamento (NF-e) ao cliente.</p>
+          </div>
+          <div class="int-card">
+            <div class="int-ic">🧾</div>
+            <div class="int-nm">Conformidade Tributária Integrada</div>
+            <p class="int-ds">Extingue a necessidade de usar o sistema falho do governo. Transmite os dados ao portal fiscal pertinente e gera a NF-e de forma nativa.</p>
+          </div>
+          <div class="int-card">
+            <div class="int-ic">☁️</div>
+            <div class="int-nm">Hospedagem Blindada (Cloud)</div>
+            <p class="int-ds">O servidor físico queimou? Caiu a luz? Os dados permanecem preservados em ambiente externo, possibilitando que você acesse tudo pelo 4G do celular.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-sec alt-bg">
+      <div class="container">
+        <h2 class="cta-h">O Fim das Paralisações.<br>O Alinhamento Definitivo na VIDRATO.</h2>
+        <p class="cta-d">Você está a curtos passos de dotar a Distribuidora e a Fábrica da mesma agilidade e controle de uma corporação contemporânea de alto padrão. Preservando insumos, controlando chaves manuais e consolidando o lucro real.</p>
+        <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1; margin-top: 2rem;">
+          <a href="#cronograma-n" class="btn btn-g">Revisar o Plano de Adoção</a>
+          <a href="#roi-n" class="btn btn-o">Avaliar o Retorno Projetado</a>
+        </div>
+        
+        <div class="cta-grid">
+          <div style="text-align:center;padding:1.5rem;background:var(--cinza-1); border-radius: 8px; border:1px solid rgba(255,255,255,0.05)">
+            <div style="font-size:2rem; margin-bottom: 0.5rem;">⚡</div>
+            <div style="font-size:.75rem;color:var(--text-dim);letter-spacing:1px;font-weight: 700;">AGILIDADE VIA IA</div>
+            <div style="font-size:1.1rem;font-weight:700; color: var(--branco); margin-top: .3rem;">Operacional em ~4 Semanas</div>
+          </div>
+          <div style="text-align:center;padding:1.5rem;background:var(--verde-deep); border-radius: 8px; border:1px solid var(--verde); box-shadow: 0 10px 30px var(--verde-glow);">
+            <div style="font-size:2rem; margin-bottom: 0.5rem;">💰</div>
+            <div style="font-size:.75rem;color:var(--verde);letter-spacing:1px;font-weight: 700;">ARQUITETURA DEDICADA</div>
+            <div style="font-size:1.1rem;font-weight:700; color: var(--branco); margin-top: .3rem;">Solução Customizada P/ Vida Toda</div>
+          </div>
+          <div style="text-align:center;padding:1.5rem;background:var(--cinza-1); border-radius: 8px; border:1px solid rgba(255,255,255,0.05)">
+            <div style="font-size:2rem; margin-bottom: 0.5rem;">🔧</div>
+            <div style="font-size:.75rem;color:var(--text-dim);letter-spacing:1px;font-weight: 700;">IMPLEMENTAÇÃO EFICIENTE</div>
+            <div style="font-size:1.1rem;font-weight:700; color: var(--branco); margin-top: .3rem;">Execução Focada nos Resultados</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--verde);letter-spacing:1px;margin-bottom:.8rem">⬡ VIDRATO</div>
+      <div style="color: var(--branco); font-size: 1.05rem; margin-bottom: 1.5rem;">Ecossistema Moderno de Inteligência e Orquestração</div>
+      <div style="color:var(--text-dim);font-size:.85rem">Solução concebida para Distribuidoras de Alumínio e Indústrias Integradas.</div>
+      <div style="margin-top:2rem;color:rgba(255,255,255,0.15);font-size:.75rem; text-transform: uppercase; letter-spacing: 2px;">
+        DOCUMENTO INTERNO · PROPOSTA TÉCNICA · 2026<br><br>
+        <span style="color: var(--verde); font-weight: 800;">👨‍💻 SUPORTE DIRETO / COMERCIAL: (89) 99983-5351</span>
+      </div>
+    </footer>
+
+  </div><!-- end mode-normal -->
+</div><!-- end app -->
+
+<script>
+// ══════════════════════════════════════
+// MODO ESCOLHER E INICIALIZAÇÃO
+// ══════════════════════════════════════
+let currentMode = null;
+let kbListenerAdded = false;
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('app').classList.add('active');
+
+  // Mostra Topbar global
+  document.getElementById('global-topbar').classList.add('active');
+
+  if(mode === 'mobile') {
+    document.getElementById('mode-slides').classList.add('active');
+    document.getElementById('mode-normal').classList.remove('active');
+    
+    document.getElementById('gtb-slide-controls').style.display = 'flex';
+    document.getElementById('gtb-nav-links').style.display = 'none';
+    document.getElementById('gtb-mode-switch-to-desktop').style.display = 'flex';
+    document.getElementById('gtb-mode-switch-to-mobile').style.display = 'none';
+    
+    updateSlide();
+  } else {
+    document.getElementById('mode-normal').classList.add('active');
+    document.getElementById('mode-slides').classList.remove('active');
+    
+    document.getElementById('gtb-slide-controls').style.display = 'none';
+    document.getElementById('gtb-nav-links').style.display = 'flex';
+    document.getElementById('gtb-mode-switch-to-desktop').style.display = 'none';
+    document.getElementById('gtb-mode-switch-to-mobile').style.display = 'flex';
+    
+    // Inicia animações do modo scroll
+    setupScrollReveal();
+    setupDashObs();
+  }
+
+  if(!kbListenerAdded) {
+    kbListenerAdded = true;
+    document.addEventListener('keydown', function(e) {
+      if(currentMode === 'mobile') {
+        if(e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+        if(e.key === 'ArrowLeft') prevSlide();
+      }
+    });
+  }
+}
+
+// INICIALIZAÇÃO DIRETA NO MODO COMPUTADOR (PULA A TELA DE ESCOLHA)
+document.addEventListener("DOMContentLoaded", () => {
+    setMode('desktop');
+});
+
+// ══════════════════════════════════════
+// LÓGICA DE SLIDES (MOBILE)
+// ══════════════════════════════════════
+const TOTAL_SLIDES = 16;
+let currentSlide = 0;
+
+function updateSlide() {
+  document.querySelectorAll('.slide-panel').forEach((p, i) => {
+    p.classList.toggle('active', i === currentSlide);
+  });
+  
+  // Atualiza Barra e Botões
+  const gc = document.getElementById('gtb-counter'); if(gc) gc.textContent = (currentSlide + 1) + ' / ' + TOTAL_SLIDES;
+  const gp = document.getElementById('gtb-prog'); if(gp) gp.style.width = ((currentSlide + 1) / TOTAL_SLIDES * 100) + '%';
+  
+  const gpr = document.getElementById('gtb-prev'); 
+  if(gpr) gpr.disabled = (currentSlide === 0);
+  
+  const gnt = document.getElementById('gtb-next'); 
+  if(gnt) gnt.disabled = (currentSlide === TOTAL_SLIDES - 1);
+
+  // Zera scroll do slide atual
+  const w = document.getElementById('slide-content-wrap');
+  if(w) w.scrollTop = 0;
+
+  // Dispara animação do gráfico no Slide 6 (Índice 5) se for ativado
+  if(currentSlide === 5) { 
+     triggerSlideChartAnimation();
+  }
+}
+
+function nextSlide() { if(currentSlide < TOTAL_SLIDES - 1) { currentSlide++; updateSlide(); } }
+function prevSlide() { if(currentSlide > 0) { currentSlide--; updateSlide(); } }
+
+function triggerSlideChartAnimation() {
+  const slide6 = document.getElementById('sl-6');
+  if(!slide6) return;
+  const bars = slide6.querySelectorAll('.b');
+  bars.forEach((bar, index) => {
+    // Reseta para 0 antes de animar
+    bar.style.height = '0%';
+    bar.previousElementSibling.classList.remove('show');
+    
+    setTimeout(() => {
+      const targetHeight = bar.getAttribute('data-height');
+      bar.style.height = targetHeight;
+      const valText = bar.previousElementSibling;
+      if(valText && valText.classList.contains('val-anim')) {
+         valText.classList.add('show');
+      }
+    }, 200 + (index * 150));
+  });
+}
+
+// Swipe touch para slides
+let touchStartX = 0;
+document.addEventListener('touchstart', function(e){ touchStartX = e.touches[0].clientX; }, {passive: true});
+document.addEventListener('touchend', function(e){
+  if(currentMode !== 'mobile') return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(dx) > 50){ if(dx < 0) nextSlide(); else prevSlide(); }
+}, {passive: true});
+
+// ══════════════════════════════════════
+// SCROLL REVEAL (COMPUTADOR)
+// ══════════════════════════════════════
+function setupScrollReveal() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if(e.isIntersecting) setTimeout(() => e.target.classList.add('revealed'), i * 80);
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('#mode-normal .reveal').forEach(el => obs.observe(el));
+}
+
+// ══════════════════════════════════════
+// ANIMAÇÃO GRÁFICO (COMPUTADOR)
+// ══════════════════════════════════════
+function setupDashObs() {
+  const barObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bars = entry.target.querySelectorAll('.b');
+        bars.forEach((bar, index) => {
+          setTimeout(() => {
+            const targetHeight = bar.getAttribute('data-height');
+            bar.style.height = targetHeight;
+            const valText = bar.previousElementSibling;
+            if(valText && valText.classList.contains('val-anim')) {
+               valText.classList.add('show');
+            }
+          }, index * 150); 
+        });
+        barObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  
+  // Observa a div ".bars" dentro do mode-normal
+  const barsContainer = document.querySelector('#mode-normal .bars');
+  if(barsContainer) barObs.observe(barsContainer);
+}
+</script>
+<script id="_wauta9">var _wau = _wau || []; _wau.push(["small", "xl7o725y96", "ta9"]);</script><script async src="//waust.at/s.js"></script>
+</body>
+</html>
